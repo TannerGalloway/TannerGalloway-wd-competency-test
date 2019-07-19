@@ -1,0 +1,40 @@
+
+{{>navbar homeClass='active'}}
+<!-- jumbotron -->
+<div class="jumbotron jumbotron-fluid text-center">
+  <div class="container">
+    <h1 class="display-4">Morning Post</h1>
+    <p class="lead">Read the latest stories in</p>
+  </div>
+</div>
+
+{{!-- category tabs --}}
+<div class="categoryContainer">
+  {{!-- {{#each categories}} --}}
+  <div class="categorytab">
+    <div class="categorydiv">
+      <div class="content">
+        <div class="header">
+          <h5 class="title">Tech  {{category}}</h5>
+        </div>
+        <div class="content-body">
+          {{!-- {{#each articles}} --}}
+          <div id="article">
+            {{!-- <a href="#" id="article"> --}}
+            <div class="content">
+              <div class="articles-heading">
+                <h5 id="title">The world we dont know{{title}}</h5>
+              </div>
+              <div class="content-body">
+                <h6>Author: John{{user_id}}</h6>
+              </div>
+            </div>
+            {{!-- </a> --}}
+          </div>
+          {{!-- {{/each}} --}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{!-- {{/each}} --}}
+</div>

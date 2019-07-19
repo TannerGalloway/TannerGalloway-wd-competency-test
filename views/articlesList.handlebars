@@ -14,14 +14,14 @@
         <div>
           <div class="content">
             <div class="article-heading">
-              <h5 id="articleTitle">Taco{{title}}</h5>
+              <h5 id="articleTitle">{{title}}</h5>
               {{#if login}}
               <div class="postsActionBtns">
                 <a href="#" class="postActionImgs"><img src="/assets/images/pencil.png" alt="edit"></a>
                 <a href="#" class="postActionImgs"><img src="/assets/images/redX.png" alt="delete"></a>
               </div>
               {{/if}}
-              <h6>Author: Tom{{user_id}}</h6>
+              <h6>Author: {{user_id}}</h6>
             </div>
             <div class="content-body">
               <a href="/article" class="btn btn-info articleBtn" role="button">Read More</a>

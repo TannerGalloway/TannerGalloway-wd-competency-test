@@ -1,5 +1,5 @@
 
-{{>navbar homeClass='active'}}
+{{>navbar this}}
 <!-- jumbotron -->
 <div class="jumbotron jumbotron-fluid text-center">
   <div class="container">
@@ -10,31 +10,29 @@
 
 {{!-- category tabs --}}
 <div class="categoryContainer">
-  {{!-- {{#each categories}} --}}
+  {{#each categories}}
   <div class="categorytab">
     <div class="categorydiv">
       <div class="content">
         <div class="header">
-          <h5 class="title">{{category}}</h5>
+          <h5 class="categoryTitle">{{category}}</h5>
         </div>
         <div class="content-body">
-          {{!-- {{#each articles}} --}}
-          <div id="article">
-            {{!-- <a href="#" id="article"> --}}
+          {{#each articles}}
+          <div class="article">
             <div class="content">
               <div class="articles-heading">
-                <h5 id="title">{{title}}</h5>
+                <h5 class="title">{{title}}</h5>
               </div>
               <div class="content-body">
                 <h6>Author: {{user_id}}</h6>
               </div>
             </div>
-            {{!-- </a> --}}
           </div>
-          {{!-- {{/each}} --}}
+          {{/each}}
         </div>
       </div>
     </div>
   </div>
-  {{!-- {{/each}} --}}
+  {{/each}}
 </div>

@@ -14,24 +14,22 @@
         <a class="nav-link" href="/articles">Articles</a>
       </li>
     </ul>
-    {{#if login}}
+    {{#if navEditor}}
     <div class="btn-group">
       <button type="button" class="btn btn-outline-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">
         My Account
       </button>
       <div class="dropdown-menu dropdown-menu-right">
-        <button class="dropdown-item" type="button" id="myPosts">My Posts</button>
-        <button class="dropdown-item" type="button" id="logout">Log out</button>
+        <button type="button" class="dropdown-item" id="myPosts">My Posts</button>
+        <button type="button" class="dropdown-item logoutBtn">Logout</button>
       </div>
     </div>
+    {{else if vanilla}}
+     <button type="button" class="btn btn-outline-light accountBtn logoutBtn">Logout</button>
     {{else}}
-    <button type="button" class="btn btn-outline-light accountBtn" id="loginBtn">
-      Login
-    </button>
-    <button type="button" class="btn btn-outline-light accountBtn" id="signUpBtn">
-      Sign Up
-    </button>
+    <a href="/login" class="btn btn-outline-light accountBtn" role="button">Login</a>
+    <a href="/signup" class="btn btn-outline-light accountBtn" role="button">Sign Up</a>
     {{/if}}
   </div>
 </nav>

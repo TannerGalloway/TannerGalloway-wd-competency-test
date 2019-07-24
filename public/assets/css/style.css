@@ -46,7 +46,7 @@ body{
     margin: 20px;
 }
 
-.title, .category {
+.categoryTitle, .category {
     display: flex;
     justify-content: center;
     background-color: #17a2b8;
@@ -118,7 +118,7 @@ body{
     padding-left: 20px;
 }
 
-#article{
+.article{
     cursor: pointer; 
 }
 
@@ -135,4 +135,12 @@ body{
 
 .postActionImgs{
     padding: 10px 0px; 
+}
+
+.create{
+    margin: 10px 0px;
+}
+
+textarea{
+    resize: none;
 }

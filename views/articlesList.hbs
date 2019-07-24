@@ -1,10 +1,13 @@
 
-{{>navbar articlesClass='active'}}
+{{>navbar this}}
 <div class="container">
+  {{#if editor}}
+  <a href="/create" class="btn btn-info create" role="button">Create an Article</a>
+  {{/if}}
   <div class="articles">
     <div class="content">
       <div class="header">
-        {{#if login}}
+        {{#if editor}}
         <h5 class="article-heading">My Posts</h5>
         {{else}}
         <h5 class="article-heading">Articles</h5>
@@ -14,8 +17,8 @@
         <div>
           <div class="content">
             <div class="article-heading">
-              <h5 id="articleTitle">{{title}}</h5>
-              {{#if login}}
+              <h5 class="title" id="articleTitle">{{title}}</h5>
+              {{#if editor}}
               <div class="postsActionBtns">
                 <a href="#" class="postActionImgs"><img src="/assets/images/pencil.png" alt="edit"></a>
                 <a href="#" class="postActionImgs"><img src="/assets/images/redX.png" alt="delete"></a>
@@ -24,7 +27,7 @@
               <h6>Author: {{user_id}}</h6>
             </div>
             <div class="content-body">
-              <a href="/article" class="btn btn-info articleBtn" role="button">Read More</a>
+              <button type="button" class="btn btn-info articleBtn article">Read More</button>
             </div>
           </div>
         </div>

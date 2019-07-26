@@ -1,0 +1,26 @@
+
+{{>navbar this}}
+<div id="top">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit</h5>
+      </div>
+      <div class="modal-body">
+        <form >
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" class="form-control" id="titleText">{{title}}</input>
+            <label>Category</label>
+            <input type="text" class="form-control" id="catagoryText">{{category}}</input>
+            <label>Article Body</label>
+            <textarea rows="6" cols="62" id="articleBody">{{content}}</textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-info" id="EditSubmitBtn">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -122,8 +122,8 @@ body{
     cursor: pointer; 
 }
 
-#articleTitle{
-    display: inline-block;
+.center{
+    text-align: center;
 }
 
 .postsActionBtns{
@@ -135,6 +135,7 @@ body{
 
 .postActionImgs{
     padding: 10px 0px; 
+    cursor: pointer; 
 }
 
 .create{
@@ -143,4 +144,8 @@ body{
 
 textarea{
     resize: none;
+}
+
+label{
+    margin-top: 8px; 
 }

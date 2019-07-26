@@ -4,14 +4,49 @@ var router = express.Router();
 var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("./db/newsApp.db");
 
-
+// homepage
 router.get("/", (req, res) => {
   var {role}  = req.session;
   var renderObj = {
     homeClass: "active",
     vanilla: false,
     navEditor: false,
-    categories: [],
+    categories: []
+  };
+
+  if(role === "Vanilla"){
+    renderObj.vanilla = true;
+  }else if(role === "Editor"){
+    renderObj.navEditor = true;
+  }
+
+  db.all("SELECT category FROM articles GROUP BY category", (err, categories) => {
+      if(err){
+          console.log(err.message);
+      }
+        for(var i = 0; i < categories.length; i++){
+          renderObj.categories.push(categories[i]);
+          renderObj.categories[i].articles = [];
+            
+          db.all("SELECT user_id, title FROM articles WHERE category = ? LIMIT 3", [categories[i].category], (err, articleData) => {
+            if(err){
+                console.log(err.message);
+            }
+            
+          });
+        }
+      });
+    res.render("index", renderObj);
+});
+
+// list of articles
+router.get("/articles", (req, res) => {
+  var {role}  = req.session;
+
+  var renderObj = {
+    articlesClass: "active",
+    vanilla: false,
+    navEditor: false,
     articles: []
   };
 
@@ -20,41 +55,18 @@ router.get("/", (req, res) => {
   }else if(role === "Editor"){
     renderObj.navEditor = true;
   }
-  db.all("SELECT category FROM articles GROUP BY category", (err, categories) => {
+
+  db.each("SELECT * FROM articles", (err, article) => {
       if(err){
-          console.log(err.message);
+        console.log(err.message);
       }
-      categories.map((articleInfo) => {
-          renderObj.categories.push(articleInfo);
-          db.all("SELECT user_id, title, category FROM articles WHERE category = ? LIMIT 3", [articleInfo.category], (err, articles) => {
-              if(err){
-                  console.log(err.message);
-              }
-
-          });
-      });
+        renderObj.articles.push(article);
   });
-  res.render("index", renderObj);
-});
-
-router.get("/articles", (req, res) => {
-  var {role}  = req.session;
-
-  var renderObj = {
-    articlesClass: "active",
-    vanilla: false,
-    navEditor: false
-  };
-
-  if(role === "Vanilla"){
-    renderObj.vanilla = true;
-  }else if(role === "Editor"){
-    renderObj.navEditor = true;
-  }
 
   res.render("articlesList", renderObj);
 });
 
+// main article page
 router.get("/article/:article", (req, res) => {
   var {userId, role}  = req.session;
 
@@ -70,9 +82,23 @@ router.get("/article/:article", (req, res) => {
     renderObj.navEditor = true;
   }
 
-  userId ? res.render("article", renderObj): res.redirect("/login");
+  var clickedArticle = req.params.article;
+  clickedArticle = clickedArticle.split("-").join(" ");
+  
+  db.each("SELECT * FROM articles WHERE title = ?", [clickedArticle], (err, article) => {
+    if(err){
+      console.log(err.message);
+    }
+
+    renderObj.title = article.title;
+    renderObj.user = article.user_id;
+    renderObj.category = article.category;
+    renderObj.content = article.content;
+    userId ? res.render("article", renderObj): res.redirect("/login");
+  });
 });
 
+// login page
 router.get("/login", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Login",
@@ -82,6 +108,7 @@ router.get("/login", (req, res) => {
   });
 });
 
+// signup page
 router.get("/signup", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Sign Up",
@@ -91,26 +118,29 @@ router.get("/signup", (req, res) => {
   });
 });
 
+// user editor articles page
 router.get("/posts", (req, res) => {
-  var {role}  = req.session;
+  var {userId}  = req.session;
 
   var renderObj = {
     articlesClass: "active",
-    navEditor: false,
-    editor: false,
-    vanilla: false
+    navEditor: true,
+    editor: true,
+    vanilla: false,
+    articles: []
   };
- 
-  if(role === "Vanilla"){
-    renderObj.vanilla = true;
-  }else if(role === "Editor"){
-    renderObj.navEditor = true;
-    renderObj.editor = true;
-  }
   
+  db.each("SELECT * FROM articles WHERE user_id = ?", [userId], (err, returnedArticle) => {
+    if(err){
+      console.log(err.message);
+    }
+    returnedArticle.editor = true; 
+    renderObj.articles.push(returnedArticle);
+  });
   res.render("articlesList", renderObj);
 });
 
+// editor article creation page
 router.get("/create", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Create Article",
@@ -121,6 +151,43 @@ router.get("/create", (req, res) => {
   });
 });
 
+// article edit page
+router.get("/edit", (req, res) => {
+
+  res.render("edit", { navEditor: true});
+});
+
+router.post("/create", (req, res) => {
+  var {title, category, content} = req.body;
+  var {userId}  = req.session;
+  
+  // get all articles written by user
+  db.all("SELECT * FROM articles WHERE user_id = ?", [userId], (err, userArticles) => {
+    if(err){
+      console.log(err.message);
+    }
+    // check if article has been written already
+    var exist = userArticles.some((article) => {
+      if(article.title === title || article.content === content){
+        return true;
+      }
+    });
+
+    if(!exist){
+      db.run("INSERT INTO articles VALUES(?, ?, ?, ?)",[userId, title, category, content], (err) => {
+          if (err) {
+            console.log(err.message);
+          }
+        });
+        return res.send(true);
+    }else{
+      return res.send(false);
+    }
+    
+  });
+});
+
+// signup session 
 router.post("/signup", (req, res) => {
   var { username, password, role } = req.body;
 
@@ -137,10 +204,7 @@ router.post("/signup", (req, res) => {
     });
     
     if (!exist) {
-      db.run(
-        `INSERT INTO users VALUES(?, ?, ?)`,
-        [username, password, role],
-        function(err) {
+      db.run("INSERT INTO users VALUES(?, ?, ?)", [username, password, role], (err) => {
           if (err) {
             console.log(err.message);
           }
@@ -156,6 +220,7 @@ router.post("/signup", (req, res) => {
   });
 });
 
+// login session
 router.post("/login", (req, res) => {
   var { username, password } = req.body;
   // get all users
@@ -176,6 +241,7 @@ router.post("/login", (req, res) => {
   });
 });
 
+// logout session
 router.post("/logout", (req, res) => {
   // end session for user
     req.session = null;

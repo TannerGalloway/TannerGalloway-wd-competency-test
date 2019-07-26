@@ -1,11 +1,11 @@
 $(document).ready(function() {
   // get login/signup info
-  $("#submitBtn").on("click", () => {
+  $("#accountSubmitBtn").on("click", () => {
     var username = $("#usernameText")[0].value;
     var password = $("#passwordText")[0].value;
     var role = $("input[name=Choose]:checked", "#accountAuth").val();
     var checked = $("input[name=Choose]").is(":checked");
-    var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a username, password");
+    var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a username or password");
     var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert"); 
 
 
@@ -44,14 +44,56 @@ $(document).ready(function() {
                 }
               }
             }
-          }
-        );
+          });
       } 
   });
 
+// create article
+$("#articleSubmitBtn").on("click", () => {
+  // get article info
+  var title = $("#titleText")[0].value;
+  var category = $("#catagoryText")[0].value;
+  var content = $("#articleBody")[0].value;
+
+  // errors/success message
+  var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a title, category or article body.");
+  var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("You already created that article."); 
+  var successMessage = $("<div/>").addClass("alert alert-success").attr("role", "alert").text("Article Created successfully!");
+
+   // checks to see if all the fields are filled in
+  if(title.length === 0 || category.length === 0 || content === 0){
+    $(".alert").remove();
+    $(".modal-dialog").prepend(emptyErr);
+  }else{
+    // send data to database
+    $.post("/create", { title: title, category: category, content: content }, articleCreation => {
+      // if article crated successfully
+      if(articleCreation){
+        $("#titleText")[0].value = "";
+        $("#catagoryText")[0].value = "";
+        $("#articleBody")[0].value = "";
+
+        $(".alert").remove();
+        $(".modal-dialog").prepend(successMessage);
+      }else{
+        // if alert is not on screen and err is present display error
+          if($(".alert").length >= 0 ){
+            $(".alert").remove();
+            $(".modal-dialog").prepend(filledErr);
+          }
+      }
+    });
+  }
+});
+
+// article update
+$("#update").on("click", () => {
+  window.location = "/edit";
+});
+
   // article URL creation
-  $(".article").on("click", event => {
-    var articleTitle = $(".title")[0].textContent;
+  $(".articleBtn").on("click", (event) => {
+    var articleTitle = $(".title")[event.target.id].textContent;
     var articleTitleUrl = articleTitle.split(" ").join("-");
     window.location = "/article/" + articleTitleUrl;
   });

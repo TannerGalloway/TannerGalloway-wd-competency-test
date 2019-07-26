@@ -15,21 +15,23 @@
       </div>
       <div class="content-body">
         <div>
+          {{#each articles}}
           <div class="content">
             <div class="article-heading">
-              <h5 class="title" id="articleTitle">{{title}}</h5>
+              <h5 class="title">{{title}}</h5>
               {{#if editor}}
               <div class="postsActionBtns">
-                <a href="#" class="postActionImgs"><img src="/assets/images/pencil.png" alt="edit"></a>
-                <a href="#" class="postActionImgs"><img src="/assets/images/redX.png" alt="delete"></a>
+                <img class="postActionImgs" id="update" src="/assets/images/pencil.png" role="button" alt="edit">
+                <img class="postActionImgs" id="delete" src="/assets/images/redX.png" role="button" alt="delete">
               </div>
               {{/if}}
               <h6>Author: {{user_id}}</h6>
             </div>
             <div class="content-body">
-              <button type="button" class="btn btn-info articleBtn article">Read More</button>
+              <button type="button" class="btn btn-info articleBtn" id={{@key}} {{this}}>Read More</button>
             </div>
           </div>
+          {{/each}}
         </div>
       </div>
     </div>

@@ -11,9 +11,9 @@
         <form >
           <div class="form-group">
             <label>Title</label>
-            <input type="text" class="form-control" id="titleText" placeholder={{placeholderTitle}}>
+            <input type="text" class="form-control titleText" placeholder="{{placeholderTitle}}">
             <label>Category</label>
-            <input type="text" class="form-control" id="catagoryText" placeholder={{placeholderCatagory}}>
+            <input type="text" class="form-control catagoryText" placeholder="{{placeholderCatagory}}">
             <label>Article Body</label>
             <textarea rows="6" cols="62" id="articleBody"></textarea>
           </div>
@@ -22,11 +22,11 @@
         <form id="accountAuth">
           <div class="form-group">
             <label for="usernameText">Username</label>
-            <input type="text" class="form-control" id="usernameText" placeholder={{placeholderUsername}}>
+            <input type="text" class="form-control" id="usernameText" placeholder="{{placeholderUsername}}">
           </div>
           <div class="form-group">
             <label for="passwordText">Password</label>
-            <input type="password" class="form-control" id="passwordText" placeholder={{placeholderPassword}}>
+            <input type="password" class="form-control" id="passwordText" placeholder="{{placeholderPassword}}">
           </div>
           {{#if signup}}
             <p>Select your role</p>
@@ -44,7 +44,7 @@
       </div>
       <div class="modal-footer">
         {{#if editor}}
-        <button type="submit" class="btn btn-info" id="articleSubmitBtn">{{formtype}}</button>
+        <button type="submit" class="btn btn-info articleSubmitBtn">{{formtype}}</button>
         {{else}}
         <button type="submit" class="btn btn-info" id="accountSubmitBtn">{{formtype}}</button>
         {{/if}}

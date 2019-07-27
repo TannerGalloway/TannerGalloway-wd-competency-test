@@ -21,8 +21,8 @@
               <h5 class="title">{{title}}</h5>
               {{#if editor}}
               <div class="postsActionBtns">
-                <img class="postActionImgs" id="update" src="/assets/images/pencil.png" role="button" alt="edit">
-                <img class="postActionImgs" id="delete" src="/assets/images/redX.png" role="button" alt="delete">
+                <img class="postActionImgs update" id={{@key}} src="/assets/images/pencil.png" role="button" alt="edit">
+                <img class="postActionImgs delete" id={{@key}} src="/assets/images/redX.png" role="button" alt="delete">
               </div>
               {{/if}}
               <h6>Author: {{user_id}}</h6>

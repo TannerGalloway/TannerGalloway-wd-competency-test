@@ -48,17 +48,24 @@ $(document).ready(function() {
       } 
   });
 
-// create article
-$("#articleSubmitBtn").on("click", () => {
+// create article/edit article
+$(".articleSubmitBtn").on("click", () => {
+
+   // find url user is on and get article title
+  var url = window.location.pathname;
+  var webURL = url.substring(0, url.lastIndexOf("/"));
+  var currentArticle = url.substring(url.lastIndexOf("/") + 1, url.length);
+  currentArticle = currentArticle.split("-").join(" ");
+
   // get article info
-  var title = $("#titleText")[0].value;
-  var category = $("#catagoryText")[0].value;
+  var title = $(".titleText")[0].value;
+  var category = $(".catagoryText")[0].value;
   var content = $("#articleBody")[0].value;
 
   // errors/success message
   var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a title, category or article body.");
-  var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("You already created that article."); 
-  var successMessage = $("<div/>").addClass("alert alert-success").attr("role", "alert").text("Article Created successfully!");
+  var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured while updating this article."); 
+  var successMessage = $("<div/>").addClass("alert alert-success").attr("role", "alert");
 
    // checks to see if all the fields are filled in
   if(title.length === 0 || category.length === 0 || content === 0){
@@ -66,15 +73,20 @@ $("#articleSubmitBtn").on("click", () => {
     $(".modal-dialog").prepend(emptyErr);
   }else{
     // send data to database
-    $.post("/create", { title: title, category: category, content: content }, articleCreation => {
+    $.post(webURL, { prevtitle: currentArticle, title: title, category: category, content: content }, articleUpdate => {
       // if article crated successfully
-      if(articleCreation){
-        $("#titleText")[0].value = "";
-        $("#catagoryText")[0].value = "";
-        $("#articleBody")[0].value = "";
-
+      if(articleUpdate){
         $(".alert").remove();
         $(".modal-dialog").prepend(successMessage);
+        switch(webURL){
+          case "/create": 
+              $(".alert").text("Article Created Successfully!");
+          break;
+
+          case "/edit":
+              $(".alert").text("Article Updated Successfully!");
+          break;
+        }
       }else{
         // if alert is not on screen and err is present display error
           if($(".alert").length >= 0 ){
@@ -87,8 +99,29 @@ $("#articleSubmitBtn").on("click", () => {
 });
 
 // article update
-$("#update").on("click", () => {
-  window.location = "/edit";
+$(".update").on("click", (event) => {
+  var articleTitle = $(".title")[event.target.id].textContent;
+  var articleTitleUrl = articleTitle.split(" ").join("-");
+  window.location = "/edit/" + articleTitleUrl;
+});
+
+// delete article
+$(".delete").on("click", (event) => {
+  var articleTitle = $(".title")[event.target.id].textContent;
+  var err = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured when deleteing this article.");
+  
+  $.post("/delete", {title: articleTitle}, confirmDelete => {
+    // if successful show success message
+    if(confirmDelete){
+      window.location.reload();
+    }else{
+      // show error
+      if($(".alert").length >= 0 ){
+        $(".alert").remove();
+        $(".articles").prepend(err);
+      }
+    }
+  });
 });
 
   // article URL creation

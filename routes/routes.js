@@ -103,8 +103,8 @@ router.get("/login", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Login",
     signup: false,
-    placeholderUsername: "Enter_Username",
-    placeholderPassword: "Enter_Password"
+    placeholderUsername: "Enter Username",
+    placeholderPassword: "Enter Password"
   });
 });
 
@@ -113,8 +113,8 @@ router.get("/signup", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Sign Up",
     signup: true,
-    placeholderUsername: "Create_Username",
-    placeholderPassword: "Create_Password"
+    placeholderUsername: "Create Username",
+    placeholderPassword: "Create Password"
   });
 });
 
@@ -141,20 +141,36 @@ router.get("/posts", (req, res) => {
 });
 
 // editor article creation page
-router.get("/create", (req, res) => {
+router.get("/create/", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Create Article",
     navEditor: true,
     editor: true,
-    placeholderTitle: "Enter_article_title",
-    placeholderCatagory: "Enter_article_category"
+    placeholderTitle: "Enter article title",
+    placeholderCatagory: "Enter article category"
   });
 });
 
 // article edit page
-router.get("/edit", (req, res) => {
+router.get("/edit/:article", (req, res) => {
+  var {userId}  = req.session;
+  var editArticle = req.params.article;
+  editArticle = editArticle.split("-").join(" ");
 
-  res.render("edit", { navEditor: true});
+  db.each("SELECT * FROM articles WHERE title = ? AND user_id = ?", [editArticle, userId], (err, article) => {
+    if(err){
+      console.log(err.message);
+    }
+
+    var renderObj = {
+      navEditor: true,
+      title: article.title,
+      category: article.category,
+      content: article.content
+    };
+
+    res.render("edit", renderObj);
+  });
 });
 
 router.post("/create", (req, res) => {
@@ -166,7 +182,7 @@ router.post("/create", (req, res) => {
     if(err){
       console.log(err.message);
     }
-    // check if article has been written already
+    // check if article has been created already
     var exist = userArticles.some((article) => {
       if(article.title === title || article.content === content){
         return true;
@@ -185,6 +201,36 @@ router.post("/create", (req, res) => {
     }
     
   });
+});
+
+router.post("/edit", (req, res) => {
+  var {prevtitle, title, category, content} = req.body;
+  var {userId}  = req.session;
+
+  // update article
+  db.run("UPDATE articles SET title = ?, category = ?, content = ? WHERE user_id = ? AND title = ?",[title, category, content, userId, prevtitle], (err) => {
+    if (err) {
+      console.log(err.message);
+      return res.send(false);
+    }
+    return res.send(true);
+  });
+
+});
+
+router.post("/delete", (req, res) => {
+  var {title} = req.body;
+  var {userId}  = req.session;
+
+// delete article
+  db.run("DELETE FROM articles WHERE user_id = ? AND title = ?",[userId, title], (err) => {
+    if (err) {
+      console.log(err.message);
+      return res.send(false);
+    }
+    return res.send(true);
+  });
+
 });
 
 // signup session 

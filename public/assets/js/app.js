@@ -1,4 +1,8 @@
 $(document).ready(function() {
+
+  // get url of page
+  var url = window.location.pathname;
+  
   // get login/signup info
   $("#accountSubmitBtn").on("click", () => {
     var username = $("#usernameText")[0].value;
@@ -16,7 +20,7 @@ $(document).ready(function() {
         $(".modal-dialog").prepend(emptyErr);
 
     } //signup
-    else if(window.location.pathname === "/signup" && !checked){
+    else if(url === "/signup" && !checked){
         // for radio buttons on sign up page
         $(".alert").remove();
         $(".modal-dialog").prepend(emptyErr);
@@ -24,16 +28,17 @@ $(document).ready(function() {
         
     }else {
         // send data to database
-        $.post(window.location.pathname, { username: username, password: password, role: role }, userAuth => {
+        $.post(url, { username: username, password: password, role: role }, userAuth => {
             if (userAuth) {
               // if authenticated, login
               window.location = "/";
+            
             } else {
               // if alert is not on screen and err is present display correct error
               if ($(".alert").length >= 0 ) {
                 $(".alert").remove();
                 $(".modal-dialog").prepend(filledErr);
-                switch(window.location.pathname){
+                switch(url){
                     case "/login": 
                         $(".alert").text("The username or password entered is incorrect.");
                     break;
@@ -41,7 +46,7 @@ $(document).ready(function() {
                     case "/signup":
                         $(".alert").text("That Username is already taken.");
                     break;
-                }
+                  }
               }
             }
           });
@@ -52,7 +57,6 @@ $(document).ready(function() {
 $(".articleSubmitBtn").on("click", () => {
 
    // find url user is on and get article title
-  var url = window.location.pathname;
   var webURL = url.substring(0, url.lastIndexOf("/"));
   var currentArticle = url.substring(url.lastIndexOf("/") + 1, url.length);
   currentArticle = currentArticle.split("-").join(" ");

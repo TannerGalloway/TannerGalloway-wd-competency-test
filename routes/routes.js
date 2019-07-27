@@ -274,16 +274,22 @@ router.post("/login", (req, res) => {
     if (err) {
       console.log(err.message);
     }
-    // search to see if the user trying to login is in the database
-    users.some(user => {
-      if (user.username === username && user.password === password) {
-        // create session for user
-        req.session.userId = user.username;
-        req.session.role = user.role;
-        return res.send(true);
-      }
+
+    // check to see if there are no users
+    if(users.length === 0){
       return res.send(false);
-    });
+    }
+    else{
+      // search to see if the user trying to login is in the database
+      users.some(user => {
+        if (user.username === username && user.password === password) {
+          // create session for user
+          req.session.userId = user.username;
+          req.session.role = user.role;
+          return res.send(true);
+        }
+        return res.send(false);
+    })};
   });
 });
 

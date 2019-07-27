@@ -57,6 +57,10 @@ $(".articleSubmitBtn").on("click", () => {
   var currentArticle = url.substring(url.lastIndexOf("/") + 1, url.length);
   currentArticle = currentArticle.split("-").join(" ");
 
+  if(url === "/create"){
+    webURL = url;
+  }
+
   // get article info
   var title = $(".titleText")[0].value;
   var category = $(".catagoryText")[0].value;
@@ -81,6 +85,9 @@ $(".articleSubmitBtn").on("click", () => {
         switch(webURL){
           case "/create": 
               $(".alert").text("Article Created Successfully!");
+              $(".titleText")[0].value = "";
+              $(".catagoryText")[0].value = "";
+              $("#articleBody")[0].value = "";
           break;
 
           case "/edit":

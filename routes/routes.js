@@ -13,6 +13,7 @@ router.get("/", (req, res) => {
     navEditor: false,
     categories: []
   };
+  var categoryIndex = 0;
 
   if(role === "Vanilla"){
     renderObj.vanilla = true;
@@ -20,19 +21,27 @@ router.get("/", (req, res) => {
     renderObj.navEditor = true;
   }
 
-  db.all("SELECT category FROM articles GROUP BY category", (err, categories) => {
+  // get article categories
+  db.all("SELECT category FROM articles GROUP BY category", (err, articleCategories) => {
       if(err){
           console.log(err.message);
       }
-        for(var i = 0; i < categories.length; i++){
-          renderObj.categories.push(categories[i]);
+        // add article array to each category obj that is returned
+        for(var i = 0; i < articleCategories.length; i++){
+          renderObj.categories.push(articleCategories[i]);
           renderObj.categories[i].articles = [];
-            
-          db.all("SELECT user_id, title FROM articles WHERE category = ? LIMIT 3", [categories[i].category], (err, articleData) => {
+
+          // get 3 articles from the categories that are returned
+          db.all("SELECT user_id, title FROM articles WHERE category = ? LIMIT 3", [articleCategories[i].category], (err, articleData) => {
             if(err){
                 console.log(err.message);
             }
-            
+           
+            // add the articles to the proper category articles array
+            articleData.map(article => {
+              renderObj.categories[categoryIndex].articles.push(article);
+            });
+            categoryIndex++;
           });
         }
       });
@@ -70,32 +79,36 @@ router.get("/articles", (req, res) => {
 router.get("/article/:article", (req, res) => {
   var {userId, role}  = req.session;
 
-  var renderObj = {
-    articlesClass: "active",
-    vanilla: false,
-    navEditor: false
-  };
-
-  if(role === "Vanilla"){
-    renderObj.vanilla = true;
-  }else if(role === "Editor"){
-    renderObj.navEditor = true;
+  if(!userId){
+    return res.redirect("/login");
   }
 
-  var clickedArticle = req.params.article;
-  clickedArticle = clickedArticle.split("-").join(" ");
-  
-  db.each("SELECT * FROM articles WHERE title = ?", [clickedArticle], (err, article) => {
-    if(err){
-      console.log(err.message);
+    var renderObj = {
+      articlesClass: "active",
+      vanilla: false,
+      navEditor: false
+    };
+
+    if(role === "Vanilla"){
+      renderObj.vanilla = true;
+    }else if(role === "Editor"){
+      renderObj.navEditor = true;
     }
 
-    renderObj.title = article.title;
-    renderObj.user = article.user_id;
-    renderObj.category = article.category;
-    renderObj.content = article.content;
-    userId ? res.render("article", renderObj): res.redirect("/login");
-  });
+    var clickedArticle = req.params.article;
+    clickedArticle = clickedArticle.split("-").join(" ");
+
+    db.each("SELECT * FROM articles WHERE title = ?", [clickedArticle], (err, article) => {
+      if(err){
+        console.log(err.message);
+      }
+  
+      renderObj.title = article.title;
+      renderObj.user = article.user_id;
+      renderObj.category = article.category;
+      renderObj.content = article.content;
+      res.render("article", renderObj);
+    });
 });
 
 // login page
@@ -260,8 +273,6 @@ router.post("/signup", (req, res) => {
       req.session.userId = username;
       req.session.role = role;
       return res.send(true);
-    } else {
-      return res.send(false);
     }
   });
 });
@@ -288,7 +299,6 @@ router.post("/login", (req, res) => {
           req.session.role = user.role;
           return res.send(true);
         }
-        return res.send(false);
     })};
   });
 });

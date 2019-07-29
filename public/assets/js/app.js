@@ -1,17 +1,24 @@
 $(document).ready(function() {
 
-  // get url of page
+  // get url of current page
   var url = window.location.pathname;
+
+  // get previous page url
+  var prevUrl = document.referrer.substring(document.referrer.lastIndexOf("/"), document.referrer.length);
+
+  // home page needs to be reloaded for articles to be populated.
+  if(url === "/" && prevUrl === "/login" || url === "/" && prevUrl === "/signup"){
+    window.location.reload(true);
+  }
   
   // get login/signup info
   $("#accountSubmitBtn").on("click", () => {
     var username = $("#usernameText")[0].value;
     var password = $("#passwordText")[0].value;
-    var role = $("input[name=Choose]:checked", "#accountAuth").val();
-    var checked = $("input[name=Choose]").is(":checked");
+    var role = $("input[name=Role]:checked", "#accountAuth").val();
+    var checked = $("input[name=Role]").is(":checked");
     var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a username or password");
-    var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert"); 
-
+    var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert");
 
     // checks to see if all the fields are filled in
     // login
@@ -32,7 +39,6 @@ $(document).ready(function() {
             if (userAuth) {
               // if authenticated, login
               window.location = "/";
-            
             } else {
               // if alert is not on screen and err is present display correct error
               if ($(".alert").length >= 0 ) {

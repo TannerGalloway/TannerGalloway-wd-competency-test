@@ -16,26 +16,6 @@ var db  = function database(){
               console.log(err.message);
             }
           });
-
-          db.run("INSERT INTO articles VALUES('john', 'The world we dont know', 'Science', 'The small world of atoms is still undiscovered.')", (err) => {
-              if(err){
-                  console.log(err. message);
-              }
-          });
-
-          
-          db.run("INSERT INTO articles VALUES('sam', 'Walking dead season 10 Premiere date revealed', 'Entertainment', 'The  Premiere date for the walking dead season 10 has been revealed.')", (err) => {
-            if(err){
-                console.log(err. message);
-            }
-        });
-
-        
-        db.run("INSERT INTO articles VALUES('blake', 'Bilboard music top new artists', 'Music', 'Bilboard music top new artists shine at the award show.')", (err) => {
-            if(err){
-                console.log(err. message);
-            }
-        });
     });
     
     db.close();

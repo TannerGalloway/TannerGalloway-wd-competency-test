@@ -107,19 +107,15 @@ body{
 .articleHeading{
     display: flex;
     flex-direction: column;
+    margin: 0px 20px;
     margin-top: 20px;
-    margin-left: 20px;
 }
-.content-body, #articleText{
-    padding: 5px 16px;
+.content-body{
+    padding: 16px;
 }
 
 .article-heading{
     padding-left: 20px;
-}
-
-.center{
-    text-align: center;
 }
 
 .postsActionBtns{

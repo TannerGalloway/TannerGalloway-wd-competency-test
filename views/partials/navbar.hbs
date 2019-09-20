@@ -27,6 +27,18 @@
     </div>
     {{else if vanilla}}
      <button type="button" class="btn btn-outline-light accountBtn logoutBtn">Logout</button>
+    {{else if admin}}
+    <div class="btn-group">
+      <button type="button" class="btn btn-outline-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">
+        Control Panel
+      </button>
+      <div class="dropdown-menu dropdown-menu-right">
+        <button type="button" class="dropdown-item" id="users">Users</button>
+        <button type="button" class="dropdown-item" id="userposts">User Posts</button>
+        <button type="button" class="dropdown-item logoutBtn">Logout</button>
+      </div>
+    </div>
     {{else}}
     <a href="/login" class="btn btn-outline-light accountBtn" role="button">Login</a>
     <a href="/signup" class="btn btn-outline-light accountBtn" role="button">Sign Up</a>

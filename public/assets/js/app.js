@@ -36,6 +36,7 @@ $(document).ready(function() {
     }else {
         // send data to database
         $.post(url, { username: username, password: password, role: role }, userAuth => {
+          // console.log(userAuth);
             if (userAuth) {
               // if authenticated, login
               window.location = "/";
@@ -46,7 +47,7 @@ $(document).ready(function() {
                 $(".modal-dialog").prepend(filledErr);
                 switch(url){
                     case "/login": 
-                        $(".alert").text("The username or password entered is incorrect.");
+                        $(".alert").text("The username or password you entered is incorrect.");
                     break;
 
                     case "/signup":
@@ -65,7 +66,7 @@ $(".articleSubmitBtn").on("click", () => {
    // find url user is on and get article title
   var webURL = url.substring(0, url.lastIndexOf("/"));
   var currentArticle = url.substring(url.lastIndexOf("/") + 1, url.length);
-  currentArticle = currentArticle.split("-").join(" ");
+  currentArticle = currentArticle.split("%20").join(" ");
 
   if(url === "/create"){
     webURL = url;
@@ -118,16 +119,17 @@ $(".articleSubmitBtn").on("click", () => {
 // article update
 $(".update").on("click", (event) => {
   var articleTitle = $(".title")[event.target.id].textContent;
-  var articleTitleUrl = articleTitle.split(" ").join("-");
+  var articleTitleUrl = articleTitle.split(" ").join("%20");
   window.location = "/edit/" + articleTitleUrl;
 });
 
 // delete article
 $(".delete").on("click", (event) => {
   var articleTitle = $(".title")[event.target.id].textContent;
+  var Author = $(".Author")[event.target.id].textContent;
   var err = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured when deleteing this article.");
   
-  $.post("/delete", {title: articleTitle}, confirmDelete => {
+  $.post("/delete", {title: articleTitle, author: Author }, confirmDelete => {
     // if successful show success message
     if(confirmDelete){
       window.location.reload();
@@ -144,12 +146,12 @@ $(".delete").on("click", (event) => {
   // article URL creation
   $(".articleBtn").on("click", (event) => {
     var articleTitle = $(".title")[event.target.id].textContent;
-    var articleTitleUrl = articleTitle.split(" ").join("-");
+    var articleTitleUrl = articleTitle.split(" ").join("%20");
     window.location = "/article/" + articleTitleUrl;
   });
 
-  // my posts action + logout action
-  $("#myPosts").on("click", () => {window.location = "/posts"});
+  // my posts action, logout action and admin actions
+  $("#myPosts, #userposts").on("click", () => {window.location = "/posts"});
   $(".logoutBtn").on("click", () => {
     $.post("/logout", {}, logout => {
       if(logout){

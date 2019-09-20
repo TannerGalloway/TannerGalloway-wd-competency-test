@@ -1,8 +1,8 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
+const helpers = require("handlebars-helpers")(["comparison"]);
 const session = require("cookie-session");
 const path = require('path');
-const database = require("./db/db");
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
@@ -15,13 +15,10 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// create database if not created
-database.db();
-
 // session config
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 app.use(session({
-  name: 'session',
+  name: "Account Session",
   keys: [process.env.SECRET]
 }));
 

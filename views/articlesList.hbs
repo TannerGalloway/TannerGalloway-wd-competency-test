@@ -9,6 +9,8 @@
       <div class="header">
         {{#if editor}}
         <h5 class="article-heading">My Posts</h5>
+        {{else if admin}}
+        <h5 class="article-heading">Users Posts</h5>
         {{else}}
         <h5 class="article-heading">Articles</h5>
         {{/if}}
@@ -19,17 +21,23 @@
           <div class="content">
             <div class="article-heading">
               <h5 class="title">{{title}}</h5>
-              {{#if editor}}
+              {{#or editor admin}}
               <div class="postsActionBtns">
+                {{#if editor}}
                 <img class="postActionImgs update" id={{@key}} src="/assets/images/pencil.png" role="button" alt="edit">
                 <img class="postActionImgs delete" id={{@key}} src="/assets/images/redX.png" role="button" alt="delete">
+                {{else if admin}}
+                <img class="postActionImgs delete" id={{@key}} src="/assets/images/redX.png" role="button" alt="delete">
+                {{/if}}
               </div>
-              {{/if}}
-              <h6>Author: {{user_id}}</h6>
+              {{/or}}
+              <h6 class="Author">Author: {{userid}}</h6>
             </div>
+            {{#unless admin}}
             <div class="content-body">
               <button type="button" class="btn btn-info articleBtn" id={{@key}} {{this}}>Read More</button>
             </div>
+            {{/unless}}
           </div>
           {{/each}}
         </div>

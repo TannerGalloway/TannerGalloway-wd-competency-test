@@ -1,8 +1,8 @@
-var express = require("express");
+const express = require("express");
+const news = require("../models/news.js");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 var router = express.Router();
-
-var sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database("./db/newsApp.db");
 
 // homepage
 router.get("/", (req, res) => {
@@ -11,41 +11,40 @@ router.get("/", (req, res) => {
     homeClass: "active",
     vanilla: false,
     navEditor: false,
+    admin: false,
     categories: []
   };
-  var categoryIndex = 0;
 
-  if(role === "Vanilla"){
-    renderObj.vanilla = true;
-  }else if(role === "Editor"){
-    renderObj.navEditor = true;
+  var categoryIndex = 0;
+  switch(role){
+    case "Vanilla": renderObj.vanilla = true;
+    break;
+
+    case "Editor": renderObj.navEditor = true;
+    break;
+
+    case "Admin": renderObj.admin = true;
+    break;
   }
 
   // get article categories
-  db.all("SELECT category FROM articles GROUP BY category", (err, articleCategories) => {
-      if(err){
-          console.log(err.message);
-      }
-        // add article array to each category obj that is returned
-        for(var i = 0; i < articleCategories.length; i++){
-          renderObj.categories.push(articleCategories[i]);
-          renderObj.categories[i].articles = [];
+  news.group("category", "category", "articles", (articleCategories) => {
+    renderObj.categories = articleCategories;
 
-          // get 3 articles from the categories that are returned
-          db.all("SELECT user_id, title FROM articles WHERE category = ? LIMIT 3", [articleCategories[i].category], (err, articleData) => {
-            if(err){
-                console.log(err.message);
-            }
-           
-            // add the articles to the proper category articles array
-            articleData.map(article => {
-              renderObj.categories[categoryIndex].articles.push(article);
-            });
-            categoryIndex++;
-          });
-        }
+    for(var i = 0; i < articleCategories.length; i++){
+      renderObj.categories[i].articles = [];
+
+      // get 3 articles from the categories that are returned
+      news.limitConditionSearch("category", "userid", "title", "articles", "'" + articleCategories[i].category + "'", 3, (articleData) => {     
+        // add the articles to the proper category articles array
+        articleData.map(article => {
+          renderObj.categories[categoryIndex].articles.push(article);
+        });
+        categoryIndex++;
       });
+    };
     res.render("index", renderObj);
+  });
 });
 
 // list of articles
@@ -56,20 +55,26 @@ router.get("/articles", (req, res) => {
     articlesClass: "active",
     vanilla: false,
     navEditor: false,
+    admin: false,
     articles: []
   };
 
-  if(role === "Vanilla"){
-    renderObj.vanilla = true;
-  }else if(role === "Editor"){
-    renderObj.navEditor = true;
+  switch(role){
+    case "Vanilla": renderObj.vanilla = true;
+    break;
+
+    case "Editor": renderObj.navEditor = true;
+    break;
+
+    case "Admin": renderObj.admin = true;
+    break;
   }
 
-  db.each("SELECT * FROM articles", (err, article) => {
-      if(err){
-        console.log(err.message);
-      }
-        renderObj.articles.push(article);
+  news.all("articles", (articleData) => {
+
+    articleData.map(article => {
+      renderObj.articles.push(article);
+    });
   });
 
   res.render("articlesList", renderObj);
@@ -86,28 +91,31 @@ router.get("/article/:article", (req, res) => {
     var renderObj = {
       articlesClass: "active",
       vanilla: false,
-      navEditor: false
+      navEditor: false,
+      admin: false
     };
 
-    if(role === "Vanilla"){
-      renderObj.vanilla = true;
-    }else if(role === "Editor"){
-      renderObj.navEditor = true;
+    switch(role){
+      case "Vanilla": renderObj.vanilla = true;
+      break;
+  
+      case "Editor": renderObj.navEditor = true;
+      break;
+  
+      case "Admin": renderObj.admin = true;
+      break;
     }
 
     var clickedArticle = req.params.article;
-    clickedArticle = clickedArticle.split("-").join(" ");
+    clickedArticle = clickedArticle.split("%20").join(" ");
+    clickedArticle = '"' + clickedArticle + '"';
 
-    db.each("SELECT * FROM articles WHERE title = ?", [clickedArticle], (err, article) => {
-      if(err){
-        console.log(err.message);
-      }
-  
-      renderObj.title = article.title;
-      renderObj.user = article.user_id;
-      renderObj.category = article.category;
-      renderObj.content = article.content;
-      res.render("article", renderObj);
+    news.conditionSearch("title", "articles", clickedArticle, (article) => {
+        renderObj.title = article[0].title;
+        renderObj.user = article[0].userid;
+        renderObj.category = article[0].category;
+        renderObj.content = article[0].content;
+        res.render("article", renderObj);
     });
 });
 
@@ -131,25 +139,37 @@ router.get("/signup", (req, res) => {
   });
 });
 
-// user editor articles page
+// editor articles page
 router.get("/posts", (req, res) => {
-  var {userId}  = req.session;
+  var {userId, role}  = req.session;
 
   var renderObj = {
     articlesClass: "active",
-    navEditor: true,
-    editor: true,
-    vanilla: false,
+    navEditor: false,
+    editor: false,
+    admin: false,
     articles: []
   };
-  
-  db.each("SELECT * FROM articles WHERE user_id = ?", [userId], (err, returnedArticle) => {
-    if(err){
-      console.log(err.message);
-    }
-    returnedArticle.editor = true; 
-    renderObj.articles.push(returnedArticle);
-  });
+
+  if(role === "Editor"){
+    renderObj.navEditor = true;
+    renderObj.editor = true;
+    news.conditionSearch("userid", "articles", '"' + userId + '"', (returnedArticle) => {
+      returnedArticle.map(article => {
+        renderObj.articles.push(article);
+        article.editor = true;
+      }); 
+    });
+  }else if(role === "Admin"){
+    renderObj.admin = true;
+    news.all("articles", (returnedArticles) => {
+      returnedArticles.map(article => {
+        renderObj.articles.push(article);
+        article.admin = true;
+      });
+    });
+  };
+
   res.render("articlesList", renderObj);
 });
 
@@ -168,33 +188,31 @@ router.get("/create/", (req, res) => {
 router.get("/edit/:article", (req, res) => {
   var {userId}  = req.session;
   var editArticle = req.params.article;
-  editArticle = editArticle.split("-").join(" ");
+  editArticle = editArticle.split("%20").join(" ");
+  editArticle = '"' + editArticle + '"';
 
-  db.each("SELECT * FROM articles WHERE title = ? AND user_id = ?", [editArticle, userId], (err, article) => {
-    if(err){
-      console.log(err.message);
-    }
-
+  news.search2conditions("title", "userid", "articles", editArticle, '"' + userId + '"', (article) => {
     var renderObj = {
       navEditor: true,
-      title: article.title,
-      category: article.category,
-      content: article.content
+      title: article[0].title,
+      category: article[0].category,
+      content: article[0].content
     };
-
     res.render("edit", renderObj);
   });
+  
 });
 
 router.post("/create", (req, res) => {
   var {title, category, content} = req.body;
   var {userId}  = req.session;
+  userId = '"' + userId + '"';
+  title = '"' + title + '"';
+  category = '"' + category + '"';
+  content = '"' + content + '"';
   
   // get all articles written by user
-  db.all("SELECT * FROM articles WHERE user_id = ?", [userId], (err, userArticles) => {
-    if(err){
-      console.log(err.message);
-    }
+  news.conditionSearch("userid", "articles", userId, (userArticles) => {
     // check if article has been created already
     var exist = userArticles.some((article) => {
       if(article.title === title || article.content === content){
@@ -203,58 +221,71 @@ router.post("/create", (req, res) => {
     });
 
     if(!exist){
-      db.run("INSERT INTO articles VALUES(?, ?, ?, ?)",[userId, title, category, content], (err) => {
-          if (err) {
-            console.log(err.message);
-          }
-        });
+
+      news.insert("articles", userId + ', ' + title + ', ' + category + ', ' + content, (err) =>{
+        if (err) {
+          console.log(err.message);
+        }
+      });
         return res.send(true);
     }else{
       return res.send(false);
     }
-    
   });
 });
 
 router.post("/edit", (req, res) => {
   var {prevtitle, title, category, content} = req.body;
   var {userId}  = req.session;
+  title = '"' + title + '"';
+  prevtitle = '"' + prevtitle + '"';
+  category = '"' + category + '"';
+  content = '"' + content + '"';
+  userId = '"' + userId + '"';
 
   // update article
-  db.run("UPDATE articles SET title = ?, category = ?, content = ? WHERE user_id = ? AND title = ?",[title, category, content, userId, prevtitle], (err) => {
-    if (err) {
-      console.log(err.message);
-      return res.send(false);
+  news.update("articles", "title", "category", "content", title, category, content, "userid", "title", userId, prevtitle, (updateStatus) =>{
+    if (updateStatus) {
+      return res.send(true);
     }
-    return res.send(true);
+    return res.send(false);
   });
-
 });
 
 router.post("/delete", (req, res) => {
-  var {title} = req.body;
-  var {userId}  = req.session;
+  var {title, author} = req.body;
+  var {userId, role}  = req.session;
+  author = author.substring(8);
+  title = '"' + title + '"';
+  userId = '"' + userId + '"';
+  author = '"' + author + '"';
 
+  
 // delete article
-  db.run("DELETE FROM articles WHERE user_id = ? AND title = ?",[userId, title], (err) => {
-    if (err) {
-      console.log(err.message);
-      return res.send(false);
+if(role === "Editor"){
+  news.delete("articles", "userid", "title", userId, title, (delStatus) => {
+    if (delStatus) {
+      return res.send(true);
     }
-    return res.send(true);
+    return res.send(false);
   });
-
+}else if(role === "Admin"){
+  news.delete("articles", "userid", "title", author, title, (delStatus) => {
+    if (delStatus) {
+      return res.send(true);
+    }
+    return res.send(false);
+  });
+}
 });
 
 // signup session 
 router.post("/signup", (req, res) => {
   var { username, password, role } = req.body;
-
+  usernameDB = '"' + username + '"';
+  roleDB = '"' + role + '"';
   // get all users
-  db.all("SELECT * FROM users", (err, users) => {
-    if (err) {
-      console.log(err.message);
-    }
+  news.all("users", (users) => {
     // check if username is taken
     var exist = users.some((user) => {
       if(user.username === username){
@@ -263,16 +294,26 @@ router.post("/signup", (req, res) => {
     });
     
     if (!exist) {
-      db.run("INSERT INTO users VALUES(?, ?, ?)", [username, password, role], (err) => {
+      // hash password
+      bcrypt.hash(password, saltRounds, (err, hash) => {
+        if(err){
+          console.log(err);
+        };
+        hash = '"' + hash + '"';
+        news.insert("users", usernameDB + ', ' + hash + ', ' + roleDB, (err) => {
           if (err) {
             console.log(err.message);
           }
-        }
-      );
+        });
+      });
+
       // create session for user
       req.session.userId = username;
       req.session.role = role;
       return res.send(true);
+    }
+    else{
+      res.send(false);
     }
   });
 });
@@ -280,12 +321,9 @@ router.post("/signup", (req, res) => {
 // login session
 router.post("/login", (req, res) => {
   var { username, password } = req.body;
+  
   // get all users
-  db.all("SELECT * FROM users", (err, users) => {
-    if (err) {
-      console.log(err.message);
-    }
-
+  news.all("users", (users) => {
     // check to see if there are no users
     if(users.length === 0){
       return res.send(false);
@@ -293,12 +331,21 @@ router.post("/login", (req, res) => {
     else{
       // search to see if the user trying to login is in the database
       users.some(user => {
-        if (user.username === username && user.password === password) {
-          // create session for user
-          req.session.userId = user.username;
-          req.session.role = user.role;
-          return res.send(true);
-        }
+        if(user.username === username){
+          bcrypt.compare(password, user.password, (err, passRes) => {
+            if(err){
+              console.log(err);
+            };
+            if(passRes){
+              // create session for user
+              req.session.userId = user.username;
+              req.session.role = user.role;
+              return res.send(true);
+            }else{
+              return res.send(false);
+            }
+          });
+        };
     })};
   });
 });
@@ -307,7 +354,7 @@ router.post("/login", (req, res) => {
 router.post("/logout", (req, res) => {
   // end session for user
     req.session = null;
-    res.clearCookie("session");
+    res.clearCookie("Account Session");
     if(req.session === null){
       return res.send(true);
     }

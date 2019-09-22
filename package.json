@@ -1,5 +1,5 @@
 {
-  "name": "TannerGalloway-wd-competency-test",
+  "name": "Morning-Post",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -20,13 +20,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TannerGalloway/TannerGalloway-wd-competency-test.git"
+    "url": "git+https://github.com/TannerGalloway/Morning-Post.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TannerGalloway/TannerGalloway-wd-competency-test/issues"
+    "url": "https://github.com/TannerGalloway/Morning-Post/issues"
   },
-  "homepage": "https://github.com/TannerGalloway/TannerGalloway-wd-competency-test#readme"
+  "homepage": "https://github.com/TannerGalloway/Morning-Post#readme"
 }

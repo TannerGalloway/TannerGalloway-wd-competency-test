@@ -19,6 +19,7 @@ $(document).ready(function() {
     var checked = $("input[name=Role]").is(":checked");
     var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a username or password");
     var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert");
+    var banErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Your Account has been Banned!");
 
     // checks to see if all the fields are filled in
     // login
@@ -35,11 +36,19 @@ $(document).ready(function() {
         
     }else {
         // send data to database
-        $.post(url, { username: username, password: password, role: role }, userAuth => {
-          // console.log(userAuth);
+        $.post(url, { username: username, password: password, role: role }, userAuth => {          
             if (userAuth) {
-              // if authenticated, login
-              window.location = "/";
+              if(userAuth === "Banned"){
+                if ($(".alert").length >= 0 ){
+                  $(".alert").remove();
+                  $(".modal-dialog").prepend(banErr);
+                }
+                $("#usernameText")[0].value = "";
+                $("#passwordText")[0].value = "";
+              }else{
+                // if authenticated, login
+                window.location = "/";
+              }
             } else {
               // if alert is not on screen and err is present display correct error
               if ($(".alert").length >= 0 ) {
@@ -150,8 +159,30 @@ $(".delete").on("click", (event) => {
     window.location = "/article/" + articleTitleUrl;
   });
 
-  // my posts action, logout action and admin actions
+  // my posts actions and admin actions
   $("#myPosts, #userposts").on("click", () => {window.location = "/posts"});
+  $("#users").on("click", () => {window.location = "/users"});
+  
+  // ban user
+  $(".userBtn").on("click", (event) => {
+    var Author = $(".Author")[event.target.id].textContent;
+    var err = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured when banning this user.");
+    
+    $.post("/ban", {userid: Author}, banstatus => {
+      // if successful show success message
+      if(banstatus){
+        window.location.reload();
+      }else{
+        // show error
+        if($(".alert").length >= 0 ){
+          $(".alert").remove();
+          $(".users").prepend(err);
+        }
+      }
+    });
+  });
+
+// logout action
   $(".logoutBtn").on("click", () => {
     $.post("/logout", {}, logout => {
       if(logout){

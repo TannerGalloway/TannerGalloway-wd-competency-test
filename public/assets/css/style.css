@@ -60,8 +60,12 @@ body{
     display: inline-block;
 }
 
-.articleBtn{
+.articleBtn, .userBtn{
     float: right;
+}
+
+.userBtn{
+    margin-top: 8px;
 }
 
 .card{
@@ -111,7 +115,8 @@ body{
     margin-top: 20px;
 }
 .content-body{
-    padding: 16px;
+    padding: 0px 16px;
+    padding-bottom: 16px; 
 }
 
 .article-heading{

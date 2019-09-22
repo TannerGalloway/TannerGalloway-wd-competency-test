@@ -31,7 +31,21 @@ var orm = {
     },
 
     selectWhere2: function(col, col2, table, value, value2, cb)
-    {   var querystring = "SELECT * FROM " + table + " WHERE " + col + " = " + value + " AND " + col2 + " = " + value2 + ";"; 
+    {   var querystring = "SELECT * FROM " + table + " WHERE " + col + " = " + value + " AND " + col2 + " = " + value2 + ";";
+        connection.query(querystring, function(err, data)
+        {
+            if(err) 
+            {
+                throw err;
+            }
+        
+            cb(data);
+        });
+    },
+
+    selectWhereUsers: function(col, table, value, value2, cb)
+    {
+        var querystring = "SELECT * FROM " + table + " WHERE " + col + " IN (" + value + ", " + value2 + ");";
         connection.query(querystring, function(err, data)
         {
             if(err) 
@@ -88,6 +102,32 @@ var orm = {
     {
         var querystring = "UPDATE " + table + " SET " + col1 + " = " + value1 + ", " + col2 + " = " + value2 + ", " + col3 + " = " + value3 + 
         " WHERE " + condition + " = " + conditionValue + " AND " + condition2 + " = " + conditionValue2 + ";";
+        connection.query(querystring, function(err, data)
+        {
+            if(err)
+            {
+                throw err;
+            }
+            cb(data)
+        });
+    },
+
+    updateOne: function(table, col, value, condition, conditionValue, cb)
+    {
+        var querystring = "UPDATE " + table + " SET " + col + " = " + value + " WHERE " + condition + " = " + conditionValue + ";";
+        connection.query(querystring, function(err, data)
+        {
+            if(err)
+            {
+                throw err;
+            }
+            cb(data)
+        });
+    },
+
+    deleteOne: function(table, condition, conditionValue, cb)
+    {
+        var querystring = "DELETE FROM " + table + " WHERE " + condition + " = " + conditionValue +  ";";
         connection.query(querystring, function(err, data)
         {
             if(err)

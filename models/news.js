@@ -26,6 +26,14 @@ var news = {
         });
     },
 
+    usersselect: function(col, table, value, value2, cb)
+    {
+        orm.selectWhereUsers(col, table, value, value2, function(res)
+        {
+            cb(res)
+        });
+    },
+
     limitConditionSearch: function(col, col1, col2, table, value, limit, cb)
     {
         orm.selectWhereLimit(col, col1, col2, table, value, limit,  function(res)
@@ -58,7 +66,23 @@ var news = {
         });
     },
 
-    delete: function(table, condition, condition2, conditionValue, conditionValue2, cb) {
+    updateUsers: function(table, col, value, condition, conditionValue, cb)
+    {
+        orm.updateOne(table, col, value, condition, conditionValue, function(res)
+        {
+            cb(res)
+        });
+    },
+
+    delete: function(table, condition, conditionValue, cb)
+    {
+        orm.deleteOne(table, condition, conditionValue, function(res)
+        {
+            cb(res)
+        });
+    },
+
+    deleteMany: function(table, condition, condition2, conditionValue, conditionValue2, cb) {
         orm.deleteValues(table, condition, condition2, conditionValue, conditionValue2, function(res) {
           cb(res);
         });

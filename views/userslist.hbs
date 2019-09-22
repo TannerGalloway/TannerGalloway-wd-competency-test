@@ -1,0 +1,26 @@
+
+{{>navbar this}}
+<div class="container">
+  <div class="users">
+    <div class="content">
+      <div class="header">
+        <h5 class="article-heading">Users</h5>
+      </div>
+      <div class="content-body">
+        <div>
+          {{#each users}}
+          <div class="content">
+            <div class="article-heading">
+              <div class="userActionBtns">
+                <button type="button" class="btn btn-danger userBtn" id={{@key}} {{this}}>Ban</button>
+              </div>
+              <h5 class="Author">{{username}}</h5>
+              <h6 class="Role">Role: {{role}}</h6>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

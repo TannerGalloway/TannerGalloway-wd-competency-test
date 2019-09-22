@@ -143,6 +143,10 @@ router.get("/signup", (req, res) => {
 router.get("/posts", (req, res) => {
   var {userId, role}  = req.session;
 
+  if(!userId){
+    return res.redirect("/login");
+  }
+
   var renderObj = {
     articlesClass: "active",
     navEditor: false,
@@ -174,7 +178,13 @@ router.get("/posts", (req, res) => {
 });
 
 // editor article creation page
-router.get("/create/", (req, res) => {
+router.get("/create", (req, res) => {
+  var {userId}  = req.session;
+
+  if(!userId){
+    return res.redirect("/login");
+  }
+
   res.render("AccountAndPosts", {
     formtype: "Create Article",
     navEditor: true,
@@ -187,6 +197,11 @@ router.get("/create/", (req, res) => {
 // article edit page
 router.get("/edit/:article", (req, res) => {
   var {userId}  = req.session;
+
+  if(!userId){
+    return res.redirect("/login");
+  }
+
   var editArticle = req.params.article;
   editArticle = editArticle.split("%20").join(" ");
   editArticle = '"' + editArticle + '"';
@@ -201,6 +216,31 @@ router.get("/edit/:article", (req, res) => {
     res.render("edit", renderObj);
   });
   
+});
+
+// display all users
+router.get("/users", (req, res) => {
+  var {userId}  = req.session;
+
+  if(!userId){
+    return res.redirect("/login");
+  }
+
+  var renderObj = {
+    articlesClass: "active",
+    navEditor: false,
+    editor: false,
+    admin: true,
+    users: []
+  };
+
+  // only get editors and vanilla users
+  news.usersselect("role", "users", '"Editor"', '"Vanilla"', (returnedusers) => {
+    returnedusers.map(user =>{
+      renderObj.users.push(user);
+    });
+  });
+  res.render("userslist", renderObj);
 });
 
 router.post("/create", (req, res) => {
@@ -263,20 +303,39 @@ router.post("/delete", (req, res) => {
   
 // delete article
 if(role === "Editor"){
-  news.delete("articles", "userid", "title", userId, title, (delStatus) => {
+  news.deleteMany("articles", "userid", "title", userId, title, (delStatus) => {
     if (delStatus) {
       return res.send(true);
     }
     return res.send(false);
   });
 }else if(role === "Admin"){
-  news.delete("articles", "userid", "title", author, title, (delStatus) => {
+  news.deleteMany("articles", "userid", "title", author, title, (delStatus) => {
     if (delStatus) {
       return res.send(true);
     }
     return res.send(false);
   });
 }
+});
+
+// ban user
+router.post("/ban", (req, res) => {
+  var {userid} = req.body;
+  userid = '"' + userid + '"';
+
+  news.updateUsers("users", "role", '"Banned"', "username", userid, (updateStatus) => {
+    if(updateStatus){
+      news.delete("articles", "userid", userid, (delstatus) => {
+        if(delstatus){
+          return res.send(true);
+        }
+        return res.send(false);
+      });
+    }else{
+      return res.send(false);
+    }
+  });
 });
 
 // signup session 
@@ -331,7 +390,14 @@ router.post("/login", (req, res) => {
     else{
       // search to see if the user trying to login is in the database
       users.some(user => {
-        if(user.username === username){
+        if(user.role === "Banned"){
+          news.delete("users", "role", '"Banned"', (userDelStatus) => {
+            if(userDelStatus){
+              return res.send("Banned");
+            }
+          });
+        }
+        else if(user.username === username){
           bcrypt.compare(password, user.password, (err, passRes) => {
             if(err){
               console.log(err);

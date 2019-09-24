@@ -15,4 +15,4 @@ To acces the admin account answer these questions. <br/>
 Username: What is the first name of the developer who made this app? <br/>
 Password: What is another name for earth?,  8 bits = 1 what? <br/>
 Put together the answers from both of the password questions. <br/>
-The First Letter for the Username and Password are capitalized.
+The First Letter for the Username and Password are Capitalized.

@@ -9,4 +9,9 @@ Signing up for an account is easy just enter a username and password and select 
 You can choose between 2 different roles, one being a generic vanilla role and the other being an editor. 
 * Vanilla users will be able to read any article on the website as well as view any content a guest can.
 * Editor users can do everything a Vanilla and guest user can but with the perk of being able to create, edit and delete their own         articles while on the website. 
-* The Admin user can view all user's accounts on the website as well as what role they have. If a article is created that is not appropriate for the site the admin can delete the user's post. If a user is using the site in an incorrect way, the admin has the power to ban a user's account.   
+* The Admin user can view all user's accounts on the website as well as what role they have. If a article is created that is not appropriate for the site the admin can delete the user's post. If a user is using the site in an incorrect way, the admin has the power to ban a user's account.
+
+To acces the admin account answer these questions. <br/> 
+Username: What is the first name of the developer who made this app? <br/>
+Password: What is another name for earth?,  8 bits = 1 what? <br/>
+Put together the answers from both questions, The First Letter is Capital. 

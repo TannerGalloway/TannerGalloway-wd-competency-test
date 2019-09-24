@@ -4,9 +4,14 @@
   <div class="users">
     <div class="content">
       <div class="header">
-        <h5 class="article-heading">Users</h5>
+        <h5 class="center">Users</h5>
       </div>
       <div class="content-body">
+        {{#unless users}}
+        <div>
+          <h5 class="error center">No Users Found</h5>
+        </div>
+        {{else}}
         <div>
           {{#each users}}
           <div class="content">
@@ -20,6 +25,7 @@
           </div>
           {{/each}}
         </div>
+        {{/unless}}
       </div>
     </div>
   </div>

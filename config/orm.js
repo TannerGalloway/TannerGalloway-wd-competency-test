@@ -10,7 +10,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -23,7 +23,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -36,7 +36,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -50,7 +50,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -63,7 +63,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -76,7 +76,7 @@ var orm = {
         {
             if(err) 
             {
-                throw err;
+                console.log(err);
             }
         
             cb(data);
@@ -91,7 +91,7 @@ var orm = {
         {
             if(err)
             {
-                throw err;
+                console.log(err);
             }
 
             cb(data);
@@ -106,7 +106,7 @@ var orm = {
         {
             if(err)
             {
-                throw err;
+                console.log(err);
             }
             cb(data)
         });
@@ -119,7 +119,7 @@ var orm = {
         {
             if(err)
             {
-                throw err;
+                console.log(err);
             }
             cb(data)
         });
@@ -132,7 +132,7 @@ var orm = {
         {
             if(err)
             {
-                throw err;
+                console.log(err);
             }
             cb(data)
         });
@@ -142,7 +142,7 @@ var orm = {
         var queryString = "DELETE FROM " + table + " WHERE " + condition + " = " + conditionValue + " AND " + condition2 + " = " + conditionValue2 + ";";
         connection.query(queryString, function(err, result) {
           if (err) {
-            throw err;
+            console.log(err);
           }
     
           cb(result);

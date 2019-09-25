@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const app = express();
 // create port
-const PORT = process.env.port || 8080;
+const PORT = process.env.port || 3000;
 
 // express middleware 
 app.use(express.static(path.join(__dirname, '/public')));

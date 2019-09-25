@@ -1,19 +1,17 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
-const helpers = require("handlebars-helpers")(["comparison"]);
+require("handlebars-helpers")(["comparison"]);
 const session = require("cookie-session");
-const path = require('path');
-const bodyParser = require('body-parser');
 require('dotenv').config();
 
-const app = express();
 // create port
-const PORT = process.env.port || 3000;
+const PORT = process.env.PORT || 8080;
+const app = express();
 
 // express middleware 
-app.use(express.static(path.join(__dirname, '/public')));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // session config
 app.set("trust proxy", 1);

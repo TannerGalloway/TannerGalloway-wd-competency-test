@@ -6,6 +6,7 @@ var router = express.Router();
 
 // homepage
 router.get("/", (req, res) => {
+  console.log(req.session);
   var {role}  = req.session;
   var renderObj = {
     homeClass: "active",

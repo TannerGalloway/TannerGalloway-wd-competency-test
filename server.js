@@ -17,7 +17,12 @@ app.use(express.json());
 app.set("trust proxy", 1);
 app.use(session({
   name: "Account Session",
-  keys: [process.env.SECRET]
+  keys: [process.env.SECRET],
+  cookie: {
+    secure: true,
+    httpOnly: true,
+    domain: "https://morningpost.herokuapp.com/"
+  }
 }));
 
 // handlebars

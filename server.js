@@ -14,14 +14,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // session config
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 app.use(session({
   name: "Account Session",
   keys: [process.env.SECRET],
   cookie: {
     secure: true,
     httpOnly: true,
-    domain: "https://morningpost.herokuapp.com/"
+    domain: "morningpost.herokuapp.com",
+    path: "/"
   }
 }));
 

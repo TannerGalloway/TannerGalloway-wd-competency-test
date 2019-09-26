@@ -17,7 +17,7 @@ app.use(express.json());
 app.set("trust proxy", 1);
 app.use(session({
   name: "account_session",
-  secret: process.env.SECRET,
+  keys: [process.env.SECRET],
   resave: false,
   saveUninitialized: true,
   cookie: {

@@ -1,7 +1,7 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 require("handlebars-helpers")(["comparison"]);
-const session = require("express-session");
+const session = require("cookie-session");
 require('dotenv').config();
 
 // create port
@@ -15,7 +15,10 @@ app.use(express.json());
 
 // session config
 app.set("trust proxy", 1);
-app.use(session({secret: process.env.SECRET}));
+app.use(session({
+  name: "account_session",
+  keys: [process.env.SECRET]
+}));
 
 // handlebars
 app.engine("hbs", exphbs({ 

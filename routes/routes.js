@@ -16,6 +16,8 @@ router.get("/", (req, res) => {
   };
 
   var categoryIndex = 0;
+  var categoryIterate = 0;
+  var loopIterate = 0;
   switch(role){
     case "Vanilla": renderObj.vanilla = true;
     break;
@@ -30,10 +32,9 @@ router.get("/", (req, res) => {
   // get article categories
   news.group("category", "category", "articles", (articleCategories) => {
     renderObj.categories = articleCategories;
-
+    categoryIterate = articleCategories.length;
     for(var i = 0; i < articleCategories.length; i++){
       renderObj.categories[i].articles = [];
-
       // get 3 articles from the categories that are returned
       news.limitConditionSearch("category", "userid", "title", "articles", "'" + articleCategories[i].category + "'", 3, (articleData) => {     
         // add the articles to the proper category articles array
@@ -42,9 +43,19 @@ router.get("/", (req, res) => {
         });
         categoryIndex++;
       });
+      loopIterate = i + 1;
     };
-    res.render("index", renderObj);
+    // if data is display ready, render it.
+    dbdone(categoryIterate, loopIterate).then(res.render("index", renderObj));
   });
+  // database querying and data send back done.
+  dbdone = (categories, iterate) => {
+    if(categories === iterate){
+      return new Promise((resolve) =>{
+        resolve("render");
+      });
+    }
+  }
 });
 
 // list of articles

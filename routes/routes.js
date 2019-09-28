@@ -1,23 +1,21 @@
 const express = require("express");
-const news = require("../models/news.js");
+const db = require("../models");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-var router = express.Router();
+const router = express.Router();
 
 // homepage
 router.get("/", (req, res) => {
   var {role}  = req.session;
+
   var renderObj = {
     homeClass: "active",
     vanilla: false,
     navEditor: false,
     admin: false,
-    categories: []
+    articles: []
   };
 
-  var categoryIndex = 0;
-  var categoryIterate = 0;
-  var loopIterate = 0;
   switch(role){
     case "Vanilla": renderObj.vanilla = true;
     break;
@@ -29,33 +27,22 @@ router.get("/", (req, res) => {
     break;
   }
 
-  // get article categories
-  news.group("category", "category", "articles", (articleCategories) => {
-    renderObj.categories = articleCategories;
-    categoryIterate = articleCategories.length;
-    for(var i = 0; i < articleCategories.length; i++){
-      renderObj.categories[i].articles = [];
-      // get 3 articles from the categories that are returned
-      news.limitConditionSearch("category", "userid", "title", "articles", "'" + articleCategories[i].category + "'", 3, (articleData) => {     
-        // add the articles to the proper category articles array
-        articleData.map(article => {
-          renderObj.categories[categoryIndex].articles.push(article);
-        });
-        categoryIndex++;
+  db.Article.findAll({limit: 4}).then((articles) => {
+      articles.map((article) =>{
+        var articledata = {
+          userid: "",
+          title: "",
+          articleSummary: ""
+        };
+        
+        articledata.userid = article.dataValues.userid;
+        articledata.title = article.dataValues.title;
+        contentSummary = article.dataValues.content.substring(0, 100) + "...";
+        articledata.articleSummary = contentSummary;
+        renderObj.articles.push(articledata);
       });
-      loopIterate = i + 1;
-    };
-    // if data is display ready, render it.
-    dbdone(categoryIterate, loopIterate).then(res.render("index", renderObj));
-  });
-  // database querying and data send back done.
-  dbdone = (categories, iterate) => {
-    if(categories === iterate){
-      return new Promise((resolve) =>{
-        resolve("render");
-      });
-    }
-  }
+      res.render("index", renderObj);
+    });
 });
 
 // list of articles
@@ -81,14 +68,10 @@ router.get("/articles", (req, res) => {
     break;
   }
 
-  news.all("articles", (articleData) => {
-
-    articleData.map(article => {
-      renderObj.articles.push(article);
-    });
+  db.Article.findAll().then((articleData) => {
+    renderObj.articles = articleData;
+    res.render("articlesList", renderObj);
   });
-
-  res.render("articlesList", renderObj);
 });
 
 // main article page
@@ -119,13 +102,16 @@ router.get("/article/:article", (req, res) => {
 
     var clickedArticle = req.params.article;
     clickedArticle = clickedArticle.split("%20").join(" ");
-    clickedArticle = '"' + clickedArticle + '"';
 
-    news.conditionSearch("title", "articles", clickedArticle, (article) => {
-        renderObj.title = article[0].title;
-        renderObj.user = article[0].userid;
-        renderObj.category = article[0].category;
-        renderObj.content = article[0].content;
+    db.Article.findAll({
+      where: {
+        title: clickedArticle
+      }
+    }).then((article) => {
+        renderObj.title = article[0].dataValues.title;
+        renderObj.user = article[0].dataValues.userid;
+        renderObj.category = article[0].dataValues.category;
+        renderObj.content = article[0].dataValues.content;
         res.render("article", renderObj);
     });
 });
@@ -169,22 +155,29 @@ router.get("/posts", (req, res) => {
   if(role === "Editor"){
     renderObj.navEditor = true;
     renderObj.editor = true;
-    news.conditionSearch("userid", "articles", '"' + userId + '"', (returnedArticle) => {
+
+    // get articles for logged in user.
+    db.Article.findAll({
+      where: {
+        userid: userId
+      }
+    }).then((returnedArticle) => {
       returnedArticle.map(article => {
         renderObj.articles.push(article);
         article.editor = true;
-      }); 
+      });
     });
   }else if(role === "Admin"){
     renderObj.admin = true;
-    news.all("articles", (returnedArticles) => {
+
+    // get all articles
+    db.Article.findAll().then((returnedArticles) => {
       returnedArticles.map(article => {
         renderObj.articles.push(article);
         article.admin = true;
       });
     });
   };
-
   res.render("articlesList", renderObj);
 });
 
@@ -215,18 +208,22 @@ router.get("/edit/:article", (req, res) => {
 
   var editArticle = req.params.article;
   editArticle = editArticle.split("%20").join(" ");
-  editArticle = '"' + editArticle + '"';
 
-  news.search2conditions("title", "userid", "articles", editArticle, '"' + userId + '"', (article) => {
+
+  db.Article.findAll({
+    where: {
+      title: editArticle,
+      userid: userId
+    }
+  }).then((article) => {
     var renderObj = {
       navEditor: true,
-      title: article[0].title,
-      category: article[0].category,
-      content: article[0].content
+      title: article[0].dataValues.title,
+      category: article[0].dataValues.category,
+      content: article[0].dataValues.content
     };
     res.render("edit", renderObj);
   });
-  
 });
 
 // display all users
@@ -257,30 +254,41 @@ router.get("/users", (req, res) => {
 router.post("/create", (req, res) => {
   var {title, category, content} = req.body;
   var {userId}  = req.session;
-  userId = '"' + userId + '"';
-  title = '"' + title + '"';
-  category = '"' + category + '"';
-  content = '"' + content + '"';
   
   // get all articles written by user
-  news.conditionSearch("userid", "articles", userId, (userArticles) => {
-    // check if article has been created already
-    var exist = userArticles.some((article) => {
-      if(article.title === title || article.content === content){
-        return true;
-      }
-    });
-
-    if(!exist){
-
-      news.insert("articles", userId + ', ' + title + ', ' + category + ', ' + content, (err) =>{
-        if (err) {
-          console.log(err.message);
-        }
-      });
+  db.Article.findAll({
+    where: {
+      userid: userId
+    }
+  }).then((userArticles) => {
+    if(userArticles.length === 0){
+      db.Article.create({
+        userid: userId,
+        title: title,
+        category: category,
+        content: content
+      }).then((status) => {console.log(status)});
         return res.send(true);
     }else{
-      return res.send(false);
+      // check if article has been created already
+      var exist = userArticles.some((article) => {
+        if(article.title === title || article.content === content){
+          return true;
+        }
+  
+        if(!exist){
+  
+          db.Article.create({
+            userid: userId,
+            title: title,
+            category: category,
+            content: content
+          }).then((status) => {console.log(status)});
+            return res.send(true);
+        }else{
+          return res.send(false);
+        }
+      });
     }
   });
 });
@@ -288,14 +296,19 @@ router.post("/create", (req, res) => {
 router.post("/edit", (req, res) => {
   var {prevtitle, title, category, content} = req.body;
   var {userId}  = req.session;
-  title = '"' + title + '"';
-  prevtitle = '"' + prevtitle + '"';
-  category = '"' + category + '"';
-  content = '"' + content + '"';
-  userId = '"' + userId + '"';
+  var updatedata = {
+    title: title,
+    category: category,
+    content: content
+  };
 
   // update article
-  news.update("articles", "title", "category", "content", title, category, content, "userid", "title", userId, prevtitle, (updateStatus) =>{
+  db.Article.update(updatedata, {
+    where: {
+      userid: userId,
+      title: prevtitle
+    }
+  }).then((updateStatus) => {
     if (updateStatus) {
       return res.send(true);
     }
@@ -307,21 +320,28 @@ router.post("/delete", (req, res) => {
   var {title, author} = req.body;
   var {userId, role}  = req.session;
   author = author.substring(8);
-  title = '"' + title + '"';
-  userId = '"' + userId + '"';
-  author = '"' + author + '"';
 
   
 // delete article
 if(role === "Editor"){
-  news.deleteMany("articles", "userid", "title", userId, title, (delStatus) => {
+  db.Article.destroy({
+    where: {
+      userid: userId,
+      title: title
+    }
+  }).then((delStatus) => {
     if (delStatus) {
       return res.send(true);
     }
     return res.send(false);
   });
 }else if(role === "Admin"){
-  news.deleteMany("articles", "userid", "title", author, title, (delStatus) => {
+  db.Article.destroy({
+    where: {
+      userid: author,
+      title: title
+    }
+  }).then((delStatus) => {
     if (delStatus) {
       return res.send(true);
     }
@@ -352,10 +372,9 @@ router.post("/ban", (req, res) => {
 // signup session 
 router.post("/signup", (req, res) => {
   var { username, password, role } = req.body;
-  usernameDB = '"' + username + '"';
-  roleDB = '"' + role + '"';
+
   // get all users
-  news.all("users", (users) => {
+  db.User.findAll().then((users) => {
     // check if username is taken
     var exist = users.some((user) => {
       if(user.username === username){
@@ -369,11 +388,12 @@ router.post("/signup", (req, res) => {
         if(err){
           console.log(err);
         };
-        hash = '"' + hash + '"';
-        news.insert("users", usernameDB + ', ' + hash + ', ' + roleDB, (err) => {
-          if (err) {
-            console.log(err.message);
-          }
+
+        // insert user into database.
+        db.User.create({
+          username: username,
+          password: hash,
+          role: role
         });
       });
 
@@ -385,24 +405,30 @@ router.post("/signup", (req, res) => {
     else{
       res.send(false);
     }
+    });
   });
-});
+
 
 // login session
 router.post("/login", (req, res) => {
   var { username, password } = req.body;
-  
+
   // get all users
-  news.all("users", (users) => {
+  db.User.findAll().then((users) => {
     // check to see if there are no users
     if(users.length === 0){
       return res.send(false);
     }
     else{
-      // search to see if the user trying to login is in the database
+      // search to see if the user trying to login is in the database and if they are Banned or not.
       users.some(user => {
         if(user.role === "Banned"){
-          news.delete("users", "role", '"Banned"', (userDelStatus) => {
+          // delete user account
+          db.User.destroy({
+            where: {
+              role: "Banned"
+            }
+          }).then((userDelStatus) => {
             if(userDelStatus){
               return res.send("Banned");
             }

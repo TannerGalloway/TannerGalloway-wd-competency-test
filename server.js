@@ -2,6 +2,7 @@ const express = require("express");
 const exphbs = require("express-handlebars");
 require("handlebars-helpers")(["comparison"]);
 const session = require("cookie-session");
+const db = require("./models");
 require('dotenv').config();
 
 // create port
@@ -34,6 +35,9 @@ var routes = require("./routes/routes.js");
 
 app.use(routes);
 
-app.listen(PORT, () => {
+// sync with database
+db.sequelize.sync().then(() => {
+  app.listen(PORT, () => {
     console.log("Server listening on port: " + PORT);
   });
+});

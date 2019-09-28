@@ -9,7 +9,7 @@
 </div>
 
 {{!-- category tabs --}}
-<div class="categoryContainer">
+{{!-- <div class="categoryContainer">
   {{#each categories}}
   <div class="categorytab">
     <div class="categorydiv">
@@ -35,4 +35,18 @@
     </div>
   </div>
   {{/each}}
+</div> --}}
+
+<div class="container">
+  {{#each articles}}
+  
+  <div class="card" style="width: 18rem;">
+    <div class="card-header">{{title}}</div>
+  <div class="card-body">
+    {{!-- <h5 class="card-title">{{title}}</h5> --}}
+    <h6 class="card-subtitle mb-2 text-muted">Author: {{userid}}</h6>
+    <p class="card-text">{{articleSummary}}</p>
+  </div>
+</div>
+{{/each}}
 </div>

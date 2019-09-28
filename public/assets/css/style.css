@@ -69,13 +69,17 @@ body{
 }
 
 .card{
-    margin: 20px;
+    margin: 20px 20px 20px 0px;
 }
 
-.categoryContainer{
+.cardContainer{
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
+}
+
+.card-header{
+    font-weight: bold;
 }
 
 .categorytab{

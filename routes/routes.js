@@ -27,7 +27,7 @@ router.get("/", (req, res) => {
     break;
   }
 
-  db.Article.findAll({limit: 4}).then((articles) => {
+  db.Article.findAll({limit: 6}).then((articles) => {
       articles.map((article) =>{
         var articledata = {
           userid: "",

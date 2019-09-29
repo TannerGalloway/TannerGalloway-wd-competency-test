@@ -1,17 +1,9 @@
 $(document).ready(function() {
 
-  // get url of current page
+  // get url of current page.
   var url = window.location.pathname;
-
-  // get previous page url
-  var prevUrl = document.referrer.substring(document.referrer.lastIndexOf("/"), document.referrer.length);
-
-  // home page needs to be reloaded for articles to be populated.
-  if(url === "/" && prevUrl === "/login" || url === "/" && prevUrl === "/signup"){
-    window.location.reload(true);
-  }
   
-  // get login/signup info
+  // get login/signup info.
   $("#accountSubmitBtn").on("click", () => {
     var username = $("#usernameText")[0].value;
     var password = $("#passwordText")[0].value;
@@ -21,21 +13,21 @@ $(document).ready(function() {
     var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert");
     var banErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Your Account has been Banned!");
 
-    // checks to see if all the fields are filled in
-    // login
+    // checks to see if all the fields are filled in.
+    // login.
     if (username.length === 0 || password.length === 0) {
         $(".alert").remove();
         $(".modal-dialog").prepend(emptyErr);
 
-    } //signup
+    } //signup.
     else if(url === "/signup" && !checked){
-        // for radio buttons on sign up page
+        // for radio buttons on sign up page.
         $(".alert").remove();
         $(".modal-dialog").prepend(emptyErr);
         $(".alert").text("Please enter a username, password or select a role.");
         
     }else {
-        // send data to database
+        // send data to database.
         $.post(url, { username: username, password: password, role: role }, userAuth => {          
             if (userAuth) {
               if(userAuth === "Banned"){
@@ -46,11 +38,11 @@ $(document).ready(function() {
                 $("#usernameText")[0].value = "";
                 $("#passwordText")[0].value = "";
               }else{
-                // if authenticated, login
+                // if authenticated, login.
                 window.location = "/";
               }
             } else {
-              // if alert is not on screen and err is present display correct error
+              // if alert is not on screen and err is present display correct error.
               if ($(".alert").length >= 0 ) {
                 $(".alert").remove();
                 $(".modal-dialog").prepend(filledErr);
@@ -69,10 +61,10 @@ $(document).ready(function() {
       } 
   });
 
-// create article/edit article
+// create article/edit article.
 $(".articleSubmitBtn").on("click", () => {
 
-   // find url user is on and get article title
+   // find url user is on and get article title.
   var webURL = url.substring(0, url.lastIndexOf("/"));
   var currentArticle = url.substring(url.lastIndexOf("/") + 1, url.length);
   currentArticle = currentArticle.split("%20").join(" ");
@@ -81,24 +73,25 @@ $(".articleSubmitBtn").on("click", () => {
     webURL = url;
   }
 
-  // get article info
+  // get article info.
   var title = $(".titleText")[0].value;
   var category = $(".catagoryText")[0].value;
   var content = $("#articleBody")[0].value;
 
-  // errors/success message
+  // errors/success message.
   var emptyErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("Please enter a title, category or article body.");
-  var filledErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured while updating this article."); 
+  var updateErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured while updating this article."); 
+  var createErr = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured while creating this article."); 
   var successMessage = $("<div/>").addClass("alert alert-success").attr("role", "alert");
 
-   // checks to see if all the fields are filled in
+   // checks to see if all the fields are filled in.
   if(title.length === 0 || category.length === 0 || content === 0){
     $(".alert").remove();
     $(".modal-dialog").prepend(emptyErr);
   }else{
-    // send data to database
+    // send data to database.
     $.post(webURL, { prevtitle: currentArticle, title: title, category: category, content: content }, articleUpdate => {
-      // if article crated successfully
+      // if article crated successfully.
       if(articleUpdate){
         $(".alert").remove();
         $(".modal-dialog").prepend(successMessage);
@@ -115,35 +108,42 @@ $(".articleSubmitBtn").on("click", () => {
           break;
         }
       }else{
-        // if alert is not on screen and err is present display error
+        // if alert is not on screen and err is present display error.
           if($(".alert").length >= 0 ){
             $(".alert").remove();
-            $(".modal-dialog").prepend(filledErr);
+            switch(webURL){
+              case "/create": 
+              $(".modal-dialog").prepend(createErr);
+          break;
+          case "/edit":
+            $(".modal-dialog").prepend(updateErr); 
+          break;
+            }
           }
       }
     });
   }
 });
 
-// article update
+// article update.
 $(".update").on("click", (event) => {
   var articleTitle = $(".title")[event.target.id].textContent;
   var articleTitleUrl = articleTitle.split(" ").join("%20");
   window.location = "/edit/" + articleTitleUrl;
 });
 
-// delete article
+// delete article.
 $(".delete").on("click", (event) => {
   var articleTitle = $(".title")[event.target.id].textContent;
   var Author = $(".Author")[event.target.id].textContent;
   var err = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured when deleteing this article.");
   
   $.post("/delete", {title: articleTitle, author: Author }, confirmDelete => {
-    // if successful show success message
+    // if successful show success message.
     if(confirmDelete){
       window.location.reload();
     }else{
-      // show error
+      // show error.
       if($(".alert").length >= 0 ){
         $(".alert").remove();
         $(".articles").prepend(err);
@@ -152,28 +152,28 @@ $(".delete").on("click", (event) => {
   });
 });
 
-  // article URL creation
+  // article URL creation.
   $(".articleBtn").on("click", (event) => {
     var articleTitle = $(".title")[event.target.id].textContent;
     var articleTitleUrl = articleTitle.split(" ").join("%20");
     window.location = "/article/" + articleTitleUrl;
   });
 
-  // my posts actions and admin actions
+  // my posts actions and admin actions.
   $("#myPosts, #userposts").on("click", () => {window.location = "/posts"});
   $("#users").on("click", () => {window.location = "/users"});
   
-  // ban user
+  // ban user.
   $(".userBtn").on("click", (event) => {
     var Author = $(".Author")[event.target.id].textContent;
     var err = $("<div/>").addClass("alert alert-danger").attr("role", "alert").text("An error has occured when banning this user.");
     
     $.post("/ban", {userid: Author}, banstatus => {
-      // if successful show success message
+      // if successful show success message.
       if(banstatus){
         window.location.reload();
       }else{
-        // show error
+        // show error.
         if($(".alert").length >= 0 ){
           $(".alert").remove();
           $(".users").prepend(err);
@@ -182,7 +182,7 @@ $(".delete").on("click", (event) => {
     });
   });
 
-// logout action
+// logout action.
   $(".logoutBtn").on("click", () => {
     $.post("/logout", {}, logout => {
       if(logout){

@@ -4,48 +4,18 @@
 <div class="jumbotron jumbotron-fluid text-center">
   <div class="container">
     <h1 class="display-4">Morning Post</h1>
-    <p class="lead">Read the latest stories in</p>
+    <p class="lead">Stories to wake up to</p>
   </div>
 </div>
 
-{{!-- category tabs --}}
-{{!-- <div class="categoryContainer">
-  {{#each categories}}
-  <div class="categorytab">
-    <div class="categorydiv">
-      <div class="content">
-        <div class="header">
-          <h5 class="categoryTitle">{{category}}</h5>
-        </div>
-        <div class="content-body">
-          {{#each articles}}
-          <div class="article">
-            <div class="content">
-              <div class="articles-heading">
-                <h5 class="title">{{title}}</h5>
-              </div>
-              <div class="content-body">
-                <h6>Author: {{userid}}</h6>
-              </div>
-            </div>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-    </div>
-  </div>
-  {{/each}}
-</div> --}}
-
 <div class="container">
   {{#each articles}}
-  
   <div class="card" style="width: 18rem;">
     <div class="card-header">{{title}}</div>
   <div class="card-body">
-    {{!-- <h5 class="card-title">{{title}}</h5> --}}
     <h6 class="card-subtitle mb-2 text-muted">Author: {{userid}}</h6>
     <p class="card-text">{{articleSummary}}</p>
+    <a href={{articleLink}} class="card-link">Read More</a>
   </div>
 </div>
 {{/each}}

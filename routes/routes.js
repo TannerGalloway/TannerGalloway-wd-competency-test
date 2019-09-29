@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router = express.Router();
 
-// homepage
+// homepage.
 router.get("/", (req, res) => {
   var {role}  = req.session;
 
@@ -32,20 +32,21 @@ router.get("/", (req, res) => {
         var articledata = {
           userid: "",
           title: "",
-          articleSummary: ""
+          articleSummary: "",
+          articleLink: ""
         };
         
         articledata.userid = article.dataValues.userid;
         articledata.title = article.dataValues.title;
-        contentSummary = article.dataValues.content.substring(0, 100) + "...";
-        articledata.articleSummary = contentSummary;
+        article.dataValues.content .length > 100 ? articledata.articleSummary = article.dataValues.content.substring(0, 100) + "..." : articledata.articleSummary = article.dataValues.content.substring(0, 100);
+        articledata.articleLink = "/article/" + articledata.title.split(" ").join("%20");
         renderObj.articles.push(articledata);
       });
       res.render("index", renderObj);
     });
 });
 
-// list of articles
+// list of articles.
 router.get("/articles", (req, res) => {
   var {role}  = req.session;
 
@@ -70,11 +71,11 @@ router.get("/articles", (req, res) => {
 
   db.Article.findAll().then((articleData) => {
     renderObj.articles = articleData;
-    res.render("articlesList", renderObj);
+    res.render("articlesList", renderObj)
   });
 });
 
-// main article page
+// main article page.
 router.get("/article/:article", (req, res) => {
   var {userId, role}  = req.session;
 
@@ -112,11 +113,11 @@ router.get("/article/:article", (req, res) => {
         renderObj.user = article[0].dataValues.userid;
         renderObj.category = article[0].dataValues.category;
         renderObj.content = article[0].dataValues.content;
-        res.render("article", renderObj);
+        res.render("article", renderObj)
     });
 });
 
-// login page
+// login page.
 router.get("/login", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Login",
@@ -126,7 +127,7 @@ router.get("/login", (req, res) => {
   });
 });
 
-// signup page
+// signup page.
 router.get("/signup", (req, res) => {
   res.render("AccountAndPosts", {
     formtype: "Sign Up",
@@ -136,7 +137,7 @@ router.get("/signup", (req, res) => {
   });
 });
 
-// editor articles page
+// editor articles page.
 router.get("/posts", (req, res) => {
   var {userId, role}  = req.session;
 
@@ -170,7 +171,7 @@ router.get("/posts", (req, res) => {
   }else if(role === "Admin"){
     renderObj.admin = true;
 
-    // get all articles
+    // get all articles.
     db.Article.findAll().then((returnedArticles) => {
       returnedArticles.map(article => {
         renderObj.articles.push(article);
@@ -181,7 +182,7 @@ router.get("/posts", (req, res) => {
   res.render("articlesList", renderObj);
 });
 
-// editor article creation page
+// editor article creation page.
 router.get("/create", (req, res) => {
   var {userId}  = req.session;
 
@@ -198,7 +199,7 @@ router.get("/create", (req, res) => {
   });
 });
 
-// article edit page
+// article edit page.
 router.get("/edit/:article", (req, res) => {
   var {userId}  = req.session;
 
@@ -222,11 +223,11 @@ router.get("/edit/:article", (req, res) => {
       category: article[0].dataValues.category,
       content: article[0].dataValues.content
     };
-    res.render("edit", renderObj);
+    res.render("edit", renderObj)
   });
 });
 
-// display all users
+// display all users.
 router.get("/users", (req, res) => {
   var {userId}  = req.session;
 
@@ -242,20 +243,24 @@ router.get("/users", (req, res) => {
     users: []
   };
 
-  // only get editors and vanilla users
-  news.usersselect("role", "users", '"Editor"', '"Vanilla"', (returnedusers) => {
+  // only get editors and vanilla users.
+  db.User.findAll({
+    where: {
+      role: ["Editor", "Vanilla"]
+    }
+  }).then((returnedusers) => {
     returnedusers.map(user =>{
       renderObj.users.push(user);
     });
+    res.render("userslist", renderObj)
   });
-  res.render("userslist", renderObj);
 });
 
 router.post("/create", (req, res) => {
   var {title, category, content} = req.body;
   var {userId}  = req.session;
   
-  // get all articles written by user
+  // get all articles written by user.
   db.Article.findAll({
     where: {
       userid: userId
@@ -267,28 +272,30 @@ router.post("/create", (req, res) => {
         title: title,
         category: category,
         content: content
-      }).then((status) => {console.log(status)});
-        return res.send(true);
+      }).then(() => {return res.send(true)});
     }else{
-      // check if article has been created already
-      var exist = userArticles.some((article) => {
-        if(article.title === title || article.content === content){
-          return true;
-        }
-  
-        if(!exist){
-  
-          db.Article.create({
-            userid: userId,
-            title: title,
-            category: category,
-            content: content
-          }).then((status) => {console.log(status)});
-            return res.send(true);
-        }else{
-          return res.send(false);
-        }
+      // check if article has been created already.
+      var titleExist = userArticles.some((article) => {
+        return article.dataValues.title === title;
       });
+      var contentExist = userArticles.some((article) => {
+        return article.dataValues.content === content;
+      });
+      // if article has not been created create article.
+      if(titleExist || contentExist){
+        return res.send(false);
+      }else{
+        db.Article.create({
+          userid: userId,
+          title: title,
+          category: category,
+          content: content
+        }).then(() => {
+            return res.send(true);
+        }).catch(() => {
+          return res.send(false);
+        });
+      }
     }
   });
 });
@@ -302,16 +309,15 @@ router.post("/edit", (req, res) => {
     content: content
   };
 
-  // update article
+  // update article.
   db.Article.update(updatedata, {
     where: {
       userid: userId,
       title: prevtitle
     }
-  }).then((updateStatus) => {
-    if (updateStatus) {
+  }).then(() => {
       return res.send(true);
-    }
+  }).catch(() => {
     return res.send(false);
   });
 });
@@ -322,17 +328,16 @@ router.post("/delete", (req, res) => {
   author = author.substring(8);
 
   
-// delete article
+// delete article.
 if(role === "Editor"){
   db.Article.destroy({
     where: {
       userid: userId,
       title: title
     }
-  }).then((delStatus) => {
-    if (delStatus) {
+  }).then(() => {
       return res.send(true);
-    }
+  }).catch(() => {
     return res.send(false);
   });
 }else if(role === "Admin"){
@@ -341,41 +346,48 @@ if(role === "Editor"){
       userid: author,
       title: title
     }
-  }).then((delStatus) => {
-    if (delStatus) {
+  }).then(() => {
       return res.send(true);
-    }
+  }).catch(() => {
     return res.send(false);
   });
 }
 });
 
-// ban user
+// ban user.
 router.post("/ban", (req, res) => {
   var {userid} = req.body;
-  userid = '"' + userid + '"';
+  var userban = {
+    role: "Banned"
+  };
 
-  news.updateUsers("users", "role", '"Banned"', "username", userid, (updateStatus) => {
-    if(updateStatus){
-      news.delete("articles", "userid", userid, (delstatus) => {
-        if(delstatus){
-          return res.send(true);
+  db.User.update(userban, {
+    where: {
+      username: userid
+    }
+  }).then(() => {
+      db.Article.destroy({
+        where: {
+          userid: userid
         }
+      }).then(() => {
+          return res.send(true);
+      }).catch(() => {
         return res.send(false);
       });
-    }else{
-      return res.send(false);
-    }
+
+  }).catch(() => {
+    return res.send(false);
   });
 });
 
-// signup session 
+// signup session. 
 router.post("/signup", (req, res) => {
   var { username, password, role } = req.body;
 
-  // get all users
+  // get all users.
   db.User.findAll().then((users) => {
-    // check if username is taken
+    // check if username is taken.
     var exist = users.some((user) => {
       if(user.username === username){
         return true;
@@ -383,7 +395,7 @@ router.post("/signup", (req, res) => {
     });
     
     if (!exist) {
-      // hash password
+      // hash password.
       bcrypt.hash(password, saltRounds, (err, hash) => {
         if(err){
           console.log(err);
@@ -397,7 +409,7 @@ router.post("/signup", (req, res) => {
         });
       });
 
-      // create session for user
+      // create session for user.
       req.session.userId = username;
       req.session.role = role;
       return res.send(true);
@@ -409,13 +421,13 @@ router.post("/signup", (req, res) => {
   });
 
 
-// login session
+// login session.
 router.post("/login", (req, res) => {
   var { username, password } = req.body;
 
-  // get all users
+  // get all users.
   db.User.findAll().then((users) => {
-    // check to see if there are no users
+    // check to see if there are no users.
     if(users.length === 0){
       return res.send(false);
     }
@@ -423,24 +435,22 @@ router.post("/login", (req, res) => {
       // search to see if the user trying to login is in the database and if they are Banned or not.
       users.some(user => {
         if(user.role === "Banned"){
-          // delete user account
+          // delete user account.
           db.User.destroy({
             where: {
               role: "Banned"
             }
-          }).then((userDelStatus) => {
-            if(userDelStatus){
+          }).then(() => {
               return res.send("Banned");
-            }
           });
         }
         else if(user.username === username){
           bcrypt.compare(password, user.password, (err, passRes) => {
             if(err){
-              console.log(err);
+              return res.send(false);
             };
             if(passRes){
-              // create session for user
+              // create session for user.
               req.session.userId = user.username;
               req.session.role = user.role;
               return res.send(true);
@@ -453,9 +463,9 @@ router.post("/login", (req, res) => {
   });
 });
 
-// logout session
+// logout session.
 router.post("/logout", (req, res) => {
-  // end session for user
+  // end session for user.
     req.session = null;
     res.clearCookie("Account Session");
     if(req.session === null){

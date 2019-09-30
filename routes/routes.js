@@ -167,6 +167,7 @@ router.get("/posts", (req, res) => {
         renderObj.articles.push(article);
         article.editor = true;
       });
+      res.render("articlesList", renderObj);
     });
   }else if(role === "Admin"){
     renderObj.admin = true;
@@ -177,9 +178,9 @@ router.get("/posts", (req, res) => {
         renderObj.articles.push(article);
         article.admin = true;
       });
+      res.render("articlesList", renderObj);
     });
   };
-  res.render("articlesList", renderObj);
 });
 
 // editor article creation page.
@@ -434,10 +435,11 @@ router.post("/login", (req, res) => {
     else{
       // search to see if the user trying to login is in the database and if they are Banned or not.
       users.some(user => {
-        if(user.role === "Banned"){
+        if(user.username === username && user.role === "Banned"){
           // delete user account.
           db.User.destroy({
             where: {
+              username: username,
               role: "Banned"
             }
           }).then(() => {

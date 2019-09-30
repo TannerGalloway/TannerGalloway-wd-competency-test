@@ -13,3 +13,6 @@ You can choose between 2 different roles, one being a generic Vanilla role and t
 
 To gain access to the Admin account: <br/>
 Contact me about your interest in this project.
+
+Visit this webpage by clicking the link below
+https://morningpost.herokuapp.com

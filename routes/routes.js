@@ -277,10 +277,10 @@ router.post("/create", (req, res) => {
     }else{
       // check if article has been created already.
       var titleExist = userArticles.some((article) => {
-        return article.dataValues.title === title;
+        return res.send(article.dataValues.title === title);
       });
       var contentExist = userArticles.some((article) => {
-        return article.dataValues.content === content;
+        return res.send(article.dataValues.content === content);
       });
       // if article has not been created create article.
       if(titleExist || contentExist){
